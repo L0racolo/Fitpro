@@ -313,23 +313,23 @@
 
         <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-300 dark:border-slate-800/80 z-40 flex items-center justify-around py-2 px-1" style="padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));">
             <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-emerald-600 dark:text-emerald-400 transition">
-                <i class="fa-solid fa-house text-base">⌂</i>
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5 1.5 12H5v9h5.5v-6h3v6H19v-9h3.5L12 2.5z"/></svg>
                 <span class="text-[9px] font-black uppercase">Home</span>
             </button>
             <button onclick="switchTab('schede')" id="nav-schede" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                <i class="fa-solid fa-layer-group text-base">▤</i>
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="0.5" y="9" width="3" height="6" rx="1"/><rect x="4" y="6" width="3.5" height="12" rx="1"/><rect x="7.5" y="10.5" width="9" height="3"/><rect x="16.5" y="6" width="3.5" height="12" rx="1"/><rect x="20.5" y="9" width="3" height="6" rx="1"/></svg>
                 <span class="text-[9px] font-black uppercase">Schede</span>
             </button>
             <button onclick="switchTab('test')" id="nav-test" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                <i class="fa-solid fa-vial-circle-check text-base">✓</i>
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.5 3h13v7a6.5 6.5 0 0 1-13 0V3z"/><path d="M5.5 5H2.5v2.5A4.5 4.5 0 0 0 7 12M18.5 5h3v2.5A4.5 4.5 0 0 1 17 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><rect x="10.5" y="15" width="3" height="3.5"/><rect x="7" y="18.5" width="10" height="3" rx="1"/></svg>
                 <span class="text-[9px] font-black uppercase">Test 1RM</span>
             </button>
             <button onclick="switchTab('progressi')" id="nav-progressi" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                <i class="fa-solid fa-chart-line text-base">↗</i>
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,18 9,11.5 13,15.5 20.5,6.5"/><polyline points="15,6 20.5,6 20.5,11.5"/></g></svg>
                 <span class="text-[9px] font-black uppercase">Progressi</span>
             </button>
             <button onclick="switchTab('impostazioni')" id="nav-impostazioni" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
-                <i class="fa-solid fa-gear text-base">⚙</i>
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><path d="M4 6h8M18 6h2M12 12h8M4 18h9M19 18h1"/></g><circle cx="15" cy="6" r="2.8"/><circle cx="8" cy="12" r="2.8"/><circle cx="16" cy="18" r="2.8"/></svg>
                 <span class="text-[9px] font-black uppercase">Opzioni</span>
             </button>
         </nav>
@@ -581,7 +581,7 @@
 
             const restBanner = document.getElementById('rest-timer-banner');
             if (restBanner) {
-                if ((activeTab === 'home') && restTimerInterval !== null && restTimeRemaining > 0) {
+                if ((activeTab === 'schede') && restTimerInterval !== null && restTimeRemaining > 0) {
                     restBanner.classList.remove('hidden');
                 } else {
                     restBanner.classList.add('hidden');
@@ -681,6 +681,8 @@
                             VAI ALLA SESSIONE
                         </button>
                     </div>
+                
+                    
                 ` : ''}
 
                 <div class="space-y-2.5 pt-1">
@@ -839,9 +841,20 @@
                         <span><b class="text-cyan-500">▢</b> Oggi</span>
                         <span>A1–A4 = Allenamento svolto</span>
                     </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Tocca un giorno per assegnare l'allenamento svolto (A1–A4): tocca ancora per cambiarlo, dopo A4 il giorno si svuota. Tocca l'etichetta S1–S4 di una riga per impostare quella settimana come Settimana 1: ogni 4ª settimana è di scarico. Le sessioni salvate vengono segnate in automatico.</p>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Tocca un giorno per assegnare l'allenamento svolto (A1–A4): tocca ancora per cambiarlo, dopo A4 il giorno si svuota. Tocca l'etichetta S1–S4 di una riga per impostare quella settimana come Settimana 1: ogni 4ª settimana è di scarico (dopo 3 di carico). Le sessioni salvate vengono segnate in automatico.</p>
                 </div>`;
             container.insertAdjacentHTML('beforeend', html);
+            if (activeWorkout) {
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-2 shadow-md">
+                        <button onclick="finishActiveWorkout()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-none shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                            CONCLUDI E SALVA ALLENAMENTO
+                        </button>
+                        <button onclick="openConfirmModal('Annulla Sessione', 'Vuoi davvero uscire senza salvare?', cancelActiveWorkout)" class="w-full py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition flex items-center justify-center gap-2">
+                            Annulla Sessione
+                        </button>
+                    </div>`);
+            }
         }
 
         function selectMesocycleWeek(weekNum) {
@@ -963,6 +976,15 @@
             activeWorkout.exercises[exIdx] = activeWorkout.exercises[exIdx + 1];
             activeWorkout.exercises[exIdx + 1] = temp;
             renderSchedeTab();
+        }
+
+        function removeWorkoutExercise(exIdx) {
+            if (!activeWorkout) return;
+            const name = activeWorkout.exercises[exIdx] ? activeWorkout.exercises[exIdx].name : '';
+            activeWorkout.exercises.splice(exIdx, 1);
+            closeModal('modal-confirm');
+            renderSchedeTab();
+            showToast(`Esercizio "${name}" eliminato`, 'info');
         }
 
         function openAddExerciseModal() {
@@ -1097,9 +1119,9 @@
                             `).join('')}
                         </div>
 
-                        <button onclick="addWorkoutSet(${exIdx})" class="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
+                        <div class="flex gap-2"><button onclick="addWorkoutSet(${exIdx})" class="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
                             ＋ Aggiungi Set
-                        </button>
+                        </button><button onclick="openConfirmModal('Elimina esercizio', 'Vuoi eliminare questo esercizio dalla sessione?', () => removeWorkoutExercise(${exIdx}))" class="px-3.5 flex items-center justify-center bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition active:scale-98" title="Elimina esercizio"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></div>
                     </div>
                 `;
             });
@@ -1107,15 +1129,7 @@
             html += `
                 </div>
 
-                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-2 mt-4 shadow-xl">
-                    <button onclick="finishActiveWorkout()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-none shadow-md transition active:scale-98 flex items-center justify-center gap-2">
-                        CONCLUDI E SALVA ALLENAMENTO
-                    </button>
-                    <button onclick="openConfirmModal('Annulla Sessione', 'Vuoi davvero uscire senza salvare?', cancelActiveWorkout)" class="w-full py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition flex items-center justify-center gap-2">
-                        Annulla Sessione
-                    </button>
-                </div>
-            `;
+                `;
             return html;
         }
 
@@ -1319,12 +1333,13 @@
         }
 
         function startRestTimer(seconds) {
+            getAudioCtx();
             stopRestTimer();
             restTimeTotal = seconds;
             restTimeRemaining = seconds;
             isRestPaused = false;
 
-            if (activeTab === 'home') {
+            if (activeTab === 'schede') {
                 document.getElementById('rest-timer-banner').classList.remove('hidden');
             }
             updateRestTimerUI();
@@ -1334,6 +1349,7 @@
                     restTimeRemaining--;
                     updateRestTimerUI();
 
+                    if (restTimeRemaining >= 1 && restTimeRemaining <= 3) playCountdownBeep();
                     if (restTimeRemaining <= 0) {
                         stopRestTimer();
                         playAudioBeep();
@@ -1369,20 +1385,42 @@
             document.getElementById('rest-timer-banner').classList.add('hidden');
         }
 
-        function playAudioBeep() {
+        let audioCtx = null;
+
+        function getAudioCtx() {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+            return audioCtx;
+        }
+
+        function playTone(freq, dur, vol, type) {
             if (!appData.settings.soundEnabled) return;
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx = getAudioCtx();
+                if (!ctx) return;
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.frequency.setValueAtTime(880, ctx.currentTime);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(vol, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start();
-                osc.stop(ctx.currentTime + 0.8);
+                osc.stop(ctx.currentTime + dur);
             } catch (e) {}
+        }
+
+        // Beep breve: a 00:03, 00:02 e 00:01
+        function playCountdownBeep() {
+            playTone(660, 0.12, 0.25, 'sine');
+        }
+
+        // Beep diverso: ultimo secondo (fine recupero), più acuto e lungo
+        function playAudioBeep() {
+            playTone(1175, 0.7, 0.2, 'square');
         }
 
         function toggleAudioSetting() {
@@ -1459,11 +1497,28 @@
             container.innerHTML = html;
         }
 
+        const TOTAL_KEY = '__TOTAL__';
+
+        function roundKg(v) {
+            return Math.round((v || 0) * 10) / 10;
+        }
+
+        function durationLabel(sec) {
+            sec = Math.max(0, Math.round(sec || 0));
+            if (sec < 60) return sec + ' s';
+            const m = Math.floor(sec / 60);
+            if (m < 60) return m + ' min';
+            return Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm';
+        }
+
         function renderProgressiTab() {
             const select = document.getElementById('stats-exercise-select');
+            const previous = select.value;
             const names = new Set();
             appData.routines.forEach(r => r.exercises.forEach(e => names.add(e.name)));
-            select.innerHTML = Array.from(names).map(n => `<option value="${n}">${n}</option>`).join('');
+            select.innerHTML = `<option value="${TOTAL_KEY}">Peso totale (kg per sessione)</option>` +
+                Array.from(names).map(n => `<option value="${n.replace(/"/g, '&quot;')}">${n}</option>`).join('');
+            if (previous && Array.from(select.options).some(o => o.value === previous)) select.value = previous;
             renderExerciseChart();
             renderWorkoutHistoryList();
         }
@@ -1474,14 +1529,30 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#475569';
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+            const sel = document.getElementById('stats-exercise-select');
+            const isTotal = !sel || sel.value === TOTAL_KEY;
+
+            let labels, data, label, title;
+            if (isTotal) {
+                const sessions = appData.history.slice().reverse();
+                labels = sessions.map(h => new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }));
+                data = sessions.map(h => roundKg(h.totalVolume));
+                label = 'Peso totale (kg)';
+                title = sessions.length ? { display: false } : { display: true, text: 'Nessuna sessione salvata', color: textColor, font: { size: 11 } };
+            } else {
+                labels = ['04/09', 'Sett 2', 'Sett 3', 'Sett 4'];
+                data = [50, 52.5, 55, 57.5];
+                label = 'Carico (kg)';
+                title = { display: false };
+            }
 
             activeExerciseChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['04/09', 'Sett 2', 'Sett 3', 'Sett 4'],
+                    labels: labels,
                     datasets: [{
-                        label: 'Carico (kg)',
-                        data: [50, 52.5, 55, 57.5],
+                        label: label,
+                        data: data,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.15)',
                         fill: true,
@@ -1491,10 +1562,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        title: title,
+                        tooltip: { callbacks: { label: (c) => `${c.parsed.y} kg` } }
+                    },
                     scales: {
                         x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
-                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+                        y: { beginAtZero: isTotal, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
                     }
                 }
             });
@@ -1511,9 +1586,9 @@
                     <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between">
                         <div>
                             <h4 class="text-xs font-bold text-slate-900 dark:text-white">${h.routineName}</h4>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400">${dateStr}</div>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">${dateStr} • ⏱ ${durationLabel(h.durationSec)}</div>
                         </div>
-                        <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">${h.totalVolume || 0} kg totali</span>
+                        <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">${roundKg(h.totalVolume)} kg totali</span>
                     </div>
                 `;
             });
