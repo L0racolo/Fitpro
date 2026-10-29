@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>FitPro Mobile - Programma Andrea Mammana</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#090d16',
+                            900: '#111827',
+                            850: '#1a2234',
+                            800: '#1f293d',
+                            750: '#28354d',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 0px; }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .swipe-content { will-change: transform; touch-action: pan-y; }
+    </style>
+</head>
+<body class="bg-slate-200 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col items-center justify-start overflow-x-hidden">
+
+    <div id="app-container" class="w-full max-w-md min-h-screen bg-slate-200 dark:bg-slate-950 flex flex-col justify-between relative border-x border-slate-300 dark:border-slate-800/80 shadow-2xl pb-24">
+
+        <header class="sticky top-0 z-40 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-none bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-md">
+                    <i class="fa-solid fa-bolt">⚡</i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">FitPro <span class="text-emerald-600 dark:text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-none bg-emerald-500/10 border border-emerald-500/30">MAMMANA</span></h1>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Calisthenics & Powerlifting</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div id="header-active-workout-pill" class="hidden">
+                    <button onclick="switchTab('schede')" class="px-2.5 py-1 rounded-none bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                        <span class="w-2 h-2 bg-emerald-500 dark:bg-emerald-400"></span>
+                        <span id="header-workout-timer">00:00</span>
+                    </button>
+                </div>
+
+                <button onclick="toggleTheme()" id="btn-theme-toggle" class="w-9 h-9 rounded-none bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 hover:opacity-90 active:scale-95 transition" title="Cambia Tema">
+                    <i id="icon-theme" class="fa-solid fa-moon text-xs">☾</i>
+                </button>
+
+                <button onclick="toggleAudioSetting()" id="btn-audio-toggle" class="w-9 h-9 rounded-none bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 hover:opacity-90 active:scale-95 transition" title="Audio Timer">
+                    <i id="icon-audio" class="fa-solid fa-volume-high text-xs">♪</i>
+                </button>
+            </div>
+        </header>
+
+        <div id="rest-timer-banner" class="hidden sticky top-14 z-30 bg-slate-100 dark:bg-slate-900 border-b border-cyan-500/40 px-4 py-2.5 shadow-2xl transition-all">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-none bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+                        <i class="fa-solid fa-stopwatch">⏱</i>
+                    </div>
+                    <div>
+                        <div class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400">Timer Recupero Attivo</div>
+                        <div id="rest-timer-display" class="text-xl font-black font-mono text-cyan-600 dark:text-cyan-400 leading-none">00:00</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="adjustRestTimer(30)" class="px-2.5 py-1 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-xs font-bold rounded-none text-slate-900 dark:text-slate-200 hover:bg-slate-400 dark:hover:bg-slate-700">+30s</button>
+                    <button onclick="togglePauseRestTimer()" id="btn-pause-rest" class="p-1.5 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-xs rounded-none text-slate-900 dark:text-slate-200 hover:bg-slate-400 dark:hover:bg-slate-700 w-8 h-8 flex items-center justify-center">
+                        <i class="fa-solid fa-pause">⏸</i>
+                    </button>
+                    <button onclick="stopRestTimer()" class="p-1.5 bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs rounded-none hover:bg-rose-500/30 w-8 h-8 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark">✕</i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-2 pt-2 border-t border-slate-300 dark:border-slate-800 flex items-center justify-between gap-1 overflow-x-auto text-xs no-scrollbar">
+                <span class="text-[9px] uppercase tracking-wider font-black text-slate-500 dark:text-slate-400 shrink-0">Time:</span>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button onclick="startRestTimer(60)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">1 min</button>
+                    <button onclick="startRestTimer(90)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">1.30 min</button>
+                    <button onclick="startRestTimer(120)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">2 min</button>
+                    <button onclick="startRestTimer(150)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">2.30 min</button>
+                    <button onclick="startRestTimer(180)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">3 min</button>
+                    <button onclick="startRestTimer(300)" class="px-2 py-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 border border-slate-400 dark:border-slate-700 text-[10px] font-extrabold rounded-none text-slate-800 dark:text-slate-200 transition">5 min</button>
+                </div>
+            </div>
+
+            <div class="w-full bg-slate-300 dark:bg-slate-800 h-1 rounded-none mt-2 overflow-hidden">
+                <div id="rest-timer-progress" class="bg-cyan-500 dark:bg-cyan-400 h-full w-full transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <main class="flex-1 px-4 py-4 space-y-4">
+
+            <section id="tab-home" class="tab-content space-y-4"></section>
+            <section id="tab-schede" class="tab-content hidden space-y-4"></section>
+
+            <section id="tab-test" class="tab-content hidden space-y-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white">Test & Benchmarks</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Massimali Ufficiali e Calcolatore 1RM</p>
+                </div>
+
+                <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-none border border-slate-300 dark:border-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <button onclick="switchTestSubTab('1rm')" id="subtab-btn-1rm" class="flex-1 py-1.5 rounded-none text-emerald-600 dark:text-emerald-400 bg-slate-200 dark:bg-slate-800 transition">Calcolatore 1RM</button>
+                    <button onclick="switchTestSubTab('benchmarks')" id="subtab-btn-benchmarks" class="flex-1 py-1.5 rounded-none transition">Massimali Scheda</button>
+                    <button onclick="switchTestSubTab('history')" id="subtab-btn-history" class="flex-1 py-1.5 rounded-none transition">Storico Test</button>
+                </div>
+
+                <div id="subtab-1rm" class="space-y-4">
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                        <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                            Calcola Stima 1RM
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico / Zavorra (kg)</label>
+                                <input type="number" id="calc-weight" value="45" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-black text-sm focus:border-emerald-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Ripetizioni</label>
+                                <input type="number" id="calc-reps" value="1" min="1" max="30" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-black text-sm focus:border-emerald-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Nome Esercizio</label>
+                            <input type="text" id="calc-exercise-name" value="Dips Zavorrati" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none">
+                        </div>
+                        <button onclick="compute1RM()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-black text-xs rounded-none shadow-md hover:opacity-95 transition">
+                            CALCOLA MASSIMALE
+                        </button>
+                    </div>
+
+                    <div id="1rm-result-card" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 hidden space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider">Massimale Stimato</span>
+                                <div id="res-1rm-val" class="text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono">0 kg</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider">Formula</span>
+                                <div class="text-xs text-slate-700 dark:text-slate-300 font-semibold mt-1">Epley / Brzycki</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Tabella Percentuali di Carico Target</h4>
+                            <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
+                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
+                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">95%</div>
+                                    <div id="pct-95" class="font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-mono">0 kg</div>
+                                </div>
+                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
+                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">90%</div>
+                                    <div id="pct-90" class="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">0 kg</div>
+                                </div>
+                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
+                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">85%</div>
+                                    <div id="pct-85" class="font-bold text-cyan-600 dark:text-cyan-400 mt-0.5 font-mono">0 kg</div>
+                                </div>
+                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
+                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">80%</div>
+                                    <div id="pct-80" class="font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-mono">0 kg</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="saveCurrent1RM()" class="w-full py-2 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-none hover:opacity-90 transition">
+                            Salva nel Registro Test
+                        </button>
+                    </div>
+                </div>
+
+                <div id="subtab-benchmarks" class="hidden space-y-3">
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                        <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Carichi 1RM dal PDF (04/09/2023)</h3>
+                            <span id="benchmark-bw-display" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">BW: 69 kg</span>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">Squat Bilanciere</span>
+                                <span class="font-mono font-black text-emerald-600 dark:text-emerald-400">105.0 kg</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">Stacco da Terra</span>
+                                <span class="font-mono font-black text-emerald-600 dark:text-emerald-400">130.0 kg</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">Pull Up Zavorra</span>
+                                <span class="font-mono font-black text-cyan-600 dark:text-cyan-400">57.0 kg (22.5kg Zav)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">Dips Zavorra</span>
+                                <span class="font-mono font-black text-cyan-600 dark:text-cyan-400">79.5 kg (45.0kg Zav)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subtab-history" class="hidden space-y-3">
+                    <div id="tests-history-list" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <section id="tab-progressi" class="tab-content hidden space-y-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white">Progressi & Analisi</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Evoluzione carichi e storico sessioni</p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 block">Esercizio da Monitorare:</label>
+                    <select id="stats-exercise-select" onchange="renderExerciseChart()" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white text-sm focus:outline-none">
+                    </select>
+                    <div class="w-full h-56 relative pt-2">
+                        <canvas id="exerciseChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="workout-history-list" class="space-y-2.5"></div>
+            </section>
+
+            <section id="tab-impostazioni" class="tab-content hidden space-y-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white">Impostazioni & Data</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Gestisci preferenze e backup</p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-300 dark:border-slate-800 pb-2">
+                        Segnale Acustico Timer
+                    </h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold">Suono di avviso a fine recupero</span>
+                        <input type="checkbox" id="setting-sound-toggle" onchange="toggleAudioSetting()" checked class="w-4 h-4 accent-emerald-500 rounded-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-300 dark:border-slate-800 pb-2">
+                        Backup JSON
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportDataJSON()" class="py-2.5 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-bold text-xs rounded-none flex items-center justify-center gap-1.5 hover:opacity-90 transition">
+                            Esporta JSON
+                        </button>
+                        <label class="py-2.5 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-cyan-600 dark:text-cyan-400 font-bold text-xs rounded-none flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition">
+                            Importa JSON
+                            <input type="file" onchange="importDataJSON(event)" class="hidden" accept=".json">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-rose-500/30 rounded-none p-4 space-y-3 shadow-md">
+                    <h3 class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider border-b border-slate-300 dark:border-slate-800 pb-2">
+                        Reset Programma PDF
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Ripristina la scheda originale dal documento Andrea Mammana.</p>
+                    <button onclick="openConfirmModal('Reset Dati', 'Vuoi ripristinare il programma originale Andrea Mammana?', executeResetData)" class="w-full py-2 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition">
+                        Ripristina Programma Originale
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-300 dark:border-slate-800/80 z-40 flex items-center justify-around py-2 px-1" style="padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-emerald-600 dark:text-emerald-400 transition">
+                <i class="fa-solid fa-house text-base">⌂</i>
+                <span class="text-[9px] font-black uppercase">Home</span>
+            </button>
+            <button onclick="switchTab('schede')" id="nav-schede" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                <i class="fa-solid fa-layer-group text-base">▤</i>
+                <span class="text-[9px] font-black uppercase">Schede</span>
+            </button>
+            <button onclick="switchTab('test')" id="nav-test" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                <i class="fa-solid fa-vial-circle-check text-base">✓</i>
+                <span class="text-[9px] font-black uppercase">Test 1RM</span>
+            </button>
+            <button onclick="switchTab('progressi')" id="nav-progressi" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                <i class="fa-solid fa-chart-line text-base">↗</i>
+                <span class="text-[9px] font-black uppercase">Progressi</span>
+            </button>
+            <button onclick="switchTab('impostazioni')" id="nav-impostazioni" class="nav-btn flex flex-col items-center gap-1 px-2.5 py-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                <i class="fa-solid fa-gear text-base">⚙</i>
+                <span class="text-[9px] font-black uppercase">Opzioni</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <div id="modal-add-exercise" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-xs rounded-none p-4 space-y-3 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                <h3 class="text-xs font-black uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
+                    Nuovo Esercizio
+                </h3>
+                <button onclick="closeModal('modal-add-exercise')" class="text-slate-400 hover:text-slate-100 text-xs">✕</button>
+            </div>
+            <div class="space-y-2">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Nome Esercizio</label>
+                    <input type="text" id="new-ex-name" placeholder="Es. Muscle Up, Affondi..." class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico Iniziale (kg)</label>
+                        <input type="number" id="new-ex-weight" value="0" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Recupero (s)</label>
+                        <input type="number" id="new-ex-rest" value="90" step="15" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('modal-add-exercise')" class="flex-1 py-2 bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-xs rounded-none">Annulla</button>
+                <button onclick="confirmAddNewExercise()" class="flex-1 py-2 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">AGGIUNGI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-xs rounded-none p-4 text-center space-y-3 shadow-2xl">
+            <div class="w-10 h-10 bg-rose-500/20 text-rose-500 flex items-center justify-center mx-auto text-lg">⚠</div>
+            <h3 id="confirm-modal-title" class="text-sm font-bold text-slate-900 dark:text-white">Sei sicuro?</h3>
+            <p id="confirm-modal-msg" class="text-xs text-slate-500 dark:text-slate-400">Operazione irreversibile.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('modal-confirm')" class="flex-1 py-2 bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-xs rounded-none">Annulla</button>
+                <button id="confirm-modal-action-btn" class="flex-1 py-2 bg-rose-600 text-white font-bold text-xs rounded-none">Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none space-y-2 w-full max-w-xs px-4"></div>
+
+    <script>
+        const STORAGE_KEY = 'fitpro_mammana_v9_5tabs';
+
+        const DEFAULT_APP_DATA = {
+            athlete: "Andrea Mammana",
+            datePDF: "04/09/2023",
+            bodyWeight: 69.0,
+            currentWeek: 1,
+            warmupNote: "Riscaldamento con Handstand Wall al muro SX",
+            routines: [
+                {
+                    id: 'routine-lunedi',
+                    name: 'Allenamento 1',
+                    category: 'Spinta & Catena Posteriore',
+                    notes: 'Focus tenute isometriche e % 1RM',
+                    exercises: [
+                        { id: 'ex-101', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, restSec: 90, startWeight: 0 },
+                        { id: 'ex-102', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, restSec: 90, startWeight: 0 },
+                        { id: 'ex-103', name: 'Dips Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: 5.3 },
+                        { id: 'ex-104', name: 'Push Up Diamond', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 },
+                        { id: 'ex-105', name: 'Stacco da Terra (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 150, startWeight: 71.5 },
+                        { id: 'ex-106', name: 'Squat Bilanciere (@55% 1RM)', sets: 3, repMin: 10, repMax: 10, restSec: 120, startWeight: 57.8 },
+                        { id: 'ex-107', name: 'Calf', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 }
+                    ]
+                },
+                {
+                    id: 'routine-martedi',
+                    name: 'Allenamento 2',
+                    category: 'Trazione & Spalle',
+                    notes: 'Focus blocco scapolare e tenute',
+                    exercises: [
+                        { id: 'ex-201', name: 'Pull Up al Petto', sets: 4, repMin: 3, repMax: 4, restSec: 90, startWeight: 0 },
+                        { id: 'ex-202', name: 'Chin Up (3" Blocco Scapolare)', sets: 4, repMin: 3, repMax: 5, restSec: 90, startWeight: 0 },
+                        { id: 'ex-203', name: 'HS Push Up Wall', sets: 4, repMin: 4, repMax: 5, restSec: 120, startWeight: 0 },
+                        { id: 'ex-204', name: 'Military Press', sets: 4, repMin: 6, repMax: 10, restSec: 90, startWeight: 35 },
+                        { id: 'ex-205', name: 'PL Lean + Barchetta + L-Sit', sets: 4, repMin: 15, repMax: 25, restSec: 60, startWeight: 0 }
+                    ]
+                },
+                {
+                    id: 'routine-giovedi',
+                    name: 'Allenamento 3',
+                    category: 'Skill & Gambe',
+                    notes: 'Fermo in buca nello Squat e Planche Lean Push Up',
+                    exercises: [
+                        { id: 'ex-301', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, restSec: 90, startWeight: 0 },
+                        { id: 'ex-302', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, restSec: 90, startWeight: 0 },
+                        { id: 'ex-303', name: 'Planche Lean Push Up (3-5" giù)', sets: 5, repMin: 3, repMax: 6, restSec: 90, startWeight: 0 },
+                        { id: 'ex-304', name: 'FL One Leg Pull Down', sets: 4, repMin: 3, repMax: 4, restSec: 90, startWeight: 0 },
+                        { id: 'ex-305', name: 'Squat Bilanciere (Buca @50% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: 52.5 },
+                        { id: 'ex-306', name: 'Stacco Rumeno', sets: 3, repMin: 8, repMax: 12, restSec: 90, startWeight: 55 },
+                        { id: 'ex-307', name: 'Calf', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 }
+                    ]
+                },
+                {
+                    id: 'routine-venerdi',
+                    name: 'Allenamento 4',
+                    category: 'Full Body & Zavorre',
+                    notes: 'Pull Up Zavorrati e Dips Anelli',
+                    exercises: [
+                        { id: 'ex-401', name: 'Pull Up Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: -3.2 },
+                        { id: 'ex-402', name: 'Rematore Bilanciere', sets: 3, repMin: 8, repMax: 12, restSec: 90, startWeight: 50 },
+                        { id: 'ex-403', name: 'Dips Ring (con 5" fermo su)', sets: 4, repMin: 3, repMax: 5, restSec: 120, startWeight: 0 },
+                        { id: 'ex-404', name: 'Panca Piana (10/8/8/6)', sets: 4, repMin: 6, repMax: 10, restSec: 120, startWeight: 60 },
+                        { id: 'ex-405', name: 'Squat Bulgaro', sets: 4, repMin: 8, repMax: 10, restSec: 75, startWeight: 16 },
+                        { id: 'ex-406', name: 'Leg Extension + Leg Curl', sets: 3, repMin: 8, repMax: 12, restSec: 60, startWeight: 40 }
+                    ]
+                }
+            ],
+            history: [],
+            tests: [
+                { id: 'test-1', type: '1RM', exercise: 'Stacco da Terra', weight: 130, calculated1RM: 130, date: '2023-09-04' },
+                { id: 'test-2', type: '1RM', exercise: 'Squat Bilanciere', weight: 105, calculated1RM: 105, date: '2023-09-04' },
+                { id: 'test-3', type: '1RM', exercise: 'Pull Up Zavorra', weight: 22.5, calculated1RM: 22.5, date: '2023-09-04' },
+                { id: 'test-4', type: '1RM', exercise: 'Dips Zavorra', weight: 45.0, calculated1RM: 45.0, date: '2023-09-04' }
+            ],
+            settings: {
+                soundEnabled: true,
+                defaultRestSec: 90,
+                theme: 'dark'
+            }
+        };
+
+        const _TUCK = ['6x5"','5x6"','5x8"','5x8"','6x8"','6x8"'];
+        const _FL = ['5x5"','5x6"','5x8"','5x8"','5x10"','5x10"'];
+        const _CALF = ['3x10','3x10','3x12','3x12','3x15','3x15'];
+        const _PRESS = ['10/8/8/6','10/8/8/6','10/8/8/6','8/6/5/5','8/6/5/5','8/6/5/5'];
+        const _R8 = ['3x8','3x8','3x10','3x10','3x12','3x12'];
+        const PROGRESSIONS = {
+            'ex-101': _TUCK,
+            'ex-102': _FL,
+            'ex-103': ['5x5-5" ↕ @50%','5x5-5" ↕ @55%','6x4-4" ↕ @60%','5x5-4" A 90° @65%','6x4-3" A 90° @70%','7x3-3" A 90° @75%'],
+            'ex-104': ['3x10','3x10','3x12','3x12','3x15','3x15'],
+            'ex-105': ['5x5-5" ↑ @50%','5x5-5" ↑ @55%','6x4-4" ↑ @60%','5x5-4" al ginocchio @65%','6x4-3" al ginocchio @70%','7x3-3" al ginocchio @75%'],
+            'ex-106': ['3x10 @50%','3x10 @55%','3x8 @60%','3x10 @55%','3x8 @60%','3x8 @65%'],
+            'ex-107': _CALF,
+            'ex-201': ['4x3','4x3','4x4','4x4','4x4','4x4'],
+            'ex-202': ['4x3 + 3" blocco','5x3 + 3" blocco','4x4 + 3" blocco','5x4 + 3" blocco','3x5 + 3" blocco','4x5 + 3" blocco'],
+            'ex-203': ['4x4','4x4','3x5','3x5','4x5','4x5'],
+            'ex-204': _PRESS,
+            'ex-205': ['4x15"','4x18"','4x20"','4x20"','4x25"','4x25"'],
+            'ex-301': _TUCK,
+            'ex-302': _FL,
+            'ex-303': ['5x3-5" giù','5x4-4" giù','5x5-3" giù','5x5-3" giù','4x6-2" giù','4x6-2" giù'],
+            'ex-304': ['4x3','4x3','4x4','4x4','4x4','4x4'],
+            'ex-305': ['5x5-5" ↕ @50%','5x5-5" ↕ @55%','6x4-4" ↕ @60%','5x5-4" buca @65%','6x4-3" buca @70%','7x3-3" buca @75%'],
+            'ex-306': _R8,
+            'ex-307': _CALF,
+            'ex-401': ['5x5-5" ↑ @55%','5x5-5" ↑ @60%','6x4-4" ↑ @65%','5x5-4" su @65%','6x4-3" su @70%','7x3-3" su @75%'],
+            'ex-402': _R8,
+            'ex-403': ['4x3 + 5" su','3x4 + 4" su','4x4 + 4" su','4x4 + 4" su','4x5 + 3" su','4x5 + 3" su'],
+            'ex-404': _PRESS,
+            'ex-405': ['4x8','4x8','4x8','4x10','4x10','4x10'],
+            'ex-406': _R8
+        };
+
+        function progressionHTML(exId) {
+            const p = PROGRESSIONS[exId];
+            if (!p) return '';
+            return `<div class="flex gap-1 overflow-x-auto no-scrollbar">${p.map((v, i) => `<div class="shrink-0 max-w-[104px] px-1.5 py-1 bg-slate-200 dark:bg-slate-850 border border-slate-300 dark:border-slate-800 text-center"><div class="text-[8px] font-black uppercase text-slate-500 dark:text-slate-400">Sett ${i + 1}</div><div class="text-[10px] font-bold font-mono text-slate-900 dark:text-slate-100 leading-tight">${v}</div></div>`).join('')}</div>`;
+        }
+
+        let appData = null;
+        let activeTab = 'home';
+        let activeWorkout = null;
+        let workoutTimerInterval = null;
+
+        let restTimerInterval = null;
+        let restTimeRemaining = 0;
+        let restTimeTotal = 0;
+        let isRestPaused = false;
+
+        let activeExerciseChart = null;
+
+        function loadAppData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    appData = JSON.parse(stored);
+                } else {
+                    appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+                    saveAppData();
+                }
+            } catch (e) {
+                appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+            }
+            applyTheme(appData.settings.theme || 'dark');
+        }
+
+        function saveAppData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {}
+        }
+
+        function applyTheme(theme) {
+            const htmlEl = document.documentElement;
+            if (theme === 'light') {
+                htmlEl.classList.remove('dark');
+                htmlEl.classList.add('light');
+            } else {
+                htmlEl.classList.remove('light');
+                htmlEl.classList.add('dark');
+            }
+            updateThemeIcon();
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            appData.settings.theme = newTheme;
+            saveAppData();
+            applyTheme(newTheme);
+            showToast(`Tema ${newTheme === 'light' ? 'Chiaro' : 'Scuro'} attivato`, 'info');
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('icon-theme');
+            if (!icon) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            icon.className = isDark ? "fa-solid fa-sun text-amber-400 text-xs" : "fa-solid fa-moon text-slate-800 text-xs";
+            icon.textContent = isDark ? '☀' : '☾';
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-emerald-600', 'dark:text-emerald-400');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-500', 'dark:text-slate-400');
+                activeNav.classList.add('text-emerald-600', 'dark:text-emerald-400');
+            }
+
+            const restBanner = document.getElementById('rest-timer-banner');
+            if (restBanner) {
+                if ((activeTab === 'home') && restTimerInterval !== null && restTimeRemaining > 0) {
+                    restBanner.classList.remove('hidden');
+                } else {
+                    restBanner.classList.add('hidden');
+                }
+            }
+
+            const headerPill = document.getElementById('header-active-workout-pill');
+            if (headerPill) {
+                if (activeWorkout !== null) {
+                    headerPill.classList.remove('hidden');
+                } else {
+                    headerPill.classList.add('hidden');
+                }
+            }
+
+            if (tabId === 'home') renderHomeTab();
+            else if (tabId === 'schede') renderSchedeTab();
+            else if (tabId === 'test') renderTestTab();
+            else if (tabId === 'progressi') renderProgressiTab();
+            else if (tabId === 'impostazioni') renderImpostazioniTab();
+        }
+
+        function renderExerciseRestPresetsHTML(exIdx, currentRestSec) {
+            const btn = (s, l) => `<button onclick="setExerciseRestPreset(${exIdx}, ${s})" class="flex-1 py-1 px-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 text-[10px] font-black rounded-none text-slate-800 dark:text-slate-200 border border-slate-400/40 dark:border-slate-700 transition">${l}</button>`;
+            return `
+                <div class="bg-slate-200/80 dark:bg-slate-950/60 p-2 border border-slate-300 dark:border-slate-800 text-xs rounded-none">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[9px] font-black uppercase text-slate-600 dark:text-slate-400 flex items-center gap-1">Preset Recupero:</span>
+                        <span class="text-[9px] font-extrabold font-mono text-cyan-600 dark:text-cyan-400">${currentRestSec || 90}s target</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
+                        ${btn(60,'1m')}${btn(90,'1.30m')}${btn(120,'2m')}${btn(150,'2.30m')}${btn(180,'3m')}${btn(300,'5m')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function setExerciseRestPreset(exIdx, seconds) {
+            if (activeWorkout && activeWorkout.exercises[exIdx]) {
+                activeWorkout.exercises[exIdx].targetRestSec = seconds;
+            }
+            startRestTimer(seconds);
+            showToast(`Recupero impostato a ${seconds}s ed avviato!`, 'info');
+            if (activeTab === 'schede') renderSchedeTab();
+        }
+
+        function renderHomeTab() {
+            renderHomeTabBase();
+            appendCalendar();
+        }
+
+        function renderHomeTabBase() {
+            const container = document.getElementById('tab-home');
+            if (!container) return;
+
+            const curWeek = appData.currentWeek || 1;
+            const isDeload = (curWeek === 4);
+
+            let html = `
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-none">Profilo Atleta</span>
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400">PDF: ${appData.datePDF}</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-black text-slate-900 dark:text-white leading-tight">${appData.athlete}</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Programma Calisthenics & Strength</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-200 dark:bg-slate-850 p-3 rounded-none border border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3">
+                        <div>
+                            <label for="input-athlete-bw" class="text-[10px] font-black uppercase text-slate-600 dark:text-slate-400 block">Peso Corporeo (BW)</label>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400">Modifica il tuo peso qui</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="input-athlete-bw" step="0.1" value="${appData.bodyWeight}" onchange="updateBodyWeight(this.value)" class="w-20 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-2 py-1 text-center font-black text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-mono">
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-300">kg</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-200/80 dark:bg-slate-950/80 p-2.5 rounded-none border border-slate-300 dark:border-slate-800 text-xs text-amber-600 dark:text-amber-300 font-semibold flex items-center gap-2">
+                        <span>🔥</span>
+                        <span>${appData.warmupNote}</span>
+                    </div>
+                </div>
+
+                ${activeWorkout ? `
+                    <div class="bg-emerald-500/10 border border-emerald-500/30 p-3.5 flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400">Sessione in Corso</span>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white">${activeWorkout.routineName}</h3>
+                        </div>
+                        <button onclick="switchTab('schede')" class="px-3 py-1.5 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">
+                            VAI ALLA SESSIONE
+                        </button>
+                    </div>
+                ` : ''}
+
+                <div class="space-y-2.5 pt-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Avvia Sezione Programma</h3>
+                        <span class="text-[10px] text-slate-500">4 Giorni Split</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-2.5">
+            `;
+
+            appData.routines.forEach(r => {
+                html += `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between hover:border-slate-400 dark:hover:border-slate-700 transition shadow-sm">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">${r.name}</h4>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">${r.exercises.length} Esercizi • ${r.category}</p>
+                        </div>
+                        <button onclick="startWorkoutFromRoutine('${r.id}')" class="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black rounded-none flex items-center gap-1.5 transition active:scale-95">
+                            ⚡ Inizia
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        /* ===== CALENDARIO MENSILE ===== */
+        let calYear = new Date().getFullYear();
+        let calMonth = new Date().getMonth();
+
+        function dateKey(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+        function parseKey(k) {
+            const p = k.split('-').map(Number);
+            return new Date(p[0], p[1] - 1, p[2]);
+        }
+        function addDays(d, n) {
+            const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            x.setDate(x.getDate() + n);
+            return x;
+        }
+        function mondayOf(d) {
+            const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+            return x;
+        }
+        function phaseOf(mon) {
+            const diff = Math.round((mon - parseKey(appData.calendar.cycleStart)) / 604800000);
+            return (((diff % 4) + 4) % 4) + 1;
+        }
+        function ensureCalendar() {
+            const _NAMES = { 'routine-lunedi': 'Allenamento 1', 'routine-martedi': 'Allenamento 2', 'routine-giovedi': 'Allenamento 3', 'routine-venerdi': 'Allenamento 4' };
+            appData.routines.forEach(r => { if (_NAMES[r.id]) r.name = _NAMES[r.id]; });
+            if (!appData.calendar) appData.calendar = { cycleStart: null, trainingDays: {} };
+            const c = appData.calendar;
+            if (!c.trainingDays) c.trainingDays = {};
+            if (!c.cycleStart) {
+                const w = appData.currentWeek || 1;
+                c.cycleStart = dateKey(addDays(mondayOf(new Date()), -7 * (w - 1)));
+            }
+            appData.currentWeek = phaseOf(mondayOf(new Date()));
+        }
+        function setCycleFromWeek(weekNum) {
+            ensureCalendar();
+            appData.calendar.cycleStart = dateKey(addDays(mondayOf(new Date()), -7 * (weekNum - 1)));
+        }
+        function calNav(delta) {
+            calMonth += delta;
+            if (calMonth < 0) { calMonth = 11; calYear--; }
+            if (calMonth > 11) { calMonth = 0; calYear++; }
+            renderHomeTab();
+        }
+        function calToggleDay(key) {
+            ensureCalendar();
+            const td = appData.calendar.trainingDays;
+            const v = td[key];
+            if (!v || v === true) td[key] = 1;
+            else if (v >= 4) delete td[key];
+            else td[key] = v + 1;
+            saveAppData();
+            renderHomeTab();
+        }
+        function calSetCycleStart(key) {
+            ensureCalendar();
+            appData.calendar.cycleStart = key;
+            saveAppData();
+            renderHomeTab();
+            showToast('Questa settimana è ora la Settimana 1 del ciclo', 'success');
+        }
+        function appendCalendar() {
+            const container = document.getElementById('tab-home');
+            if (!container) return;
+            ensureCalendar();
+            const td = appData.calendar.trainingDays;
+            const todayKey = dateKey(new Date());
+            const first = new Date(calYear, calMonth, 1);
+            const last = new Date(calYear, calMonth + 1, 0);
+            const monthLabel = first.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+
+            let monthCount = 0;
+            Object.keys(td).forEach(k => {
+                const d = parseKey(k);
+                if (d.getFullYear() === calYear && d.getMonth() === calMonth) monthCount++;
+            });
+
+            let rows = '';
+            let cur = mondayOf(first);
+            while (cur <= last) {
+                const phase = phaseOf(cur);
+                const deload = phase === 4;
+                const monKey = dateKey(cur);
+                rows += `<div class="grid gap-1" style="grid-template-columns: 34px repeat(7, 1fr);">`;
+                rows += `<button onclick="calSetCycleStart('${monKey}')" title="Imposta come Settimana 1" class="text-[9px] font-black border ${deload ? 'bg-amber-500/20 border-amber-500/50 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'}">S${phase}</button>`;
+                for (let i = 0; i < 7; i++) {
+                    const d = addDays(cur, i);
+                    const key = dateKey(d);
+                    const inMonth = d.getMonth() === calMonth;
+                    const trained = !!td[key];
+                    const isToday = key === todayKey;
+                    let cls = deload ? 'bg-amber-500/10 border-amber-500/20 text-slate-700 dark:text-slate-300' : 'bg-slate-200 dark:bg-slate-850 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300';
+                    if (trained) cls = (deload ? 'bg-amber-500 border-amber-500' : 'bg-emerald-500 border-emerald-500') + ' text-slate-950 font-black';
+                    if (!inMonth) cls += ' opacity-30';
+                    if (isToday) cls += ' ring-2 ring-cyan-500';
+                    rows += `<button onclick="calToggleDay('${key}')" class="h-9 text-xs font-bold border rounded-none ${cls} flex flex-col items-center justify-center leading-none"><span>${d.getDate()}</span>${typeof td[key] === 'number' ? `<span class="text-[8px] font-black">A${td[key]}</span>` : ''}</button>`;
+                }
+                rows += `</div>`;
+                cur = addDays(cur, 7);
+            }
+
+            const html = `
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                        <h3 class="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Calendario Mensile</h3>
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400">${monthCount} allenamenti nel mese</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button onclick="calNav(-1)" class="w-9 h-8 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-black">‹</button>
+                        <span class="text-sm font-black uppercase text-slate-900 dark:text-white">${monthLabel}</span>
+                        <button onclick="calNav(1)" class="w-9 h-8 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-black">›</button>
+                    </div>
+                    <div class="grid gap-1 text-center text-[9px] font-black uppercase text-slate-500 dark:text-slate-400" style="grid-template-columns: 34px repeat(7, 1fr);">
+                        <span>Sett</span><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
+                    </div>
+                    <div class="space-y-1">${rows}</div>
+                    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400 pt-1">
+                        <span><b class="text-emerald-500">■</b> Allenamento (carico)</span>
+                        <span><b class="text-amber-500">■</b> Settimana di scarico</span>
+                        <span><b class="text-cyan-500">▢</b> Oggi</span>
+                        <span>A1–A4 = Allenamento svolto</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Tocca un giorno per assegnare l'allenamento svolto (A1–A4): tocca ancora per cambiarlo, dopo A4 il giorno si svuota. Tocca l'etichetta S1–S4 di una riga per impostare quella settimana come Settimana 1: ogni 4ª settimana è di scarico. Le sessioni salvate vengono segnate in automatico.</p>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function selectMesocycleWeek(weekNum) {
+            setCycleFromWeek(weekNum);
+            appData.currentWeek = weekNum;
+            saveAppData();
+            renderHomeTab();
+            if (weekNum === 4) {
+                showToast("Settimana 4 (Scarico/Deload) attivata!", "warning");
+            } else {
+                showToast(`Settimana ${weekNum} (Carico) attivata!`, "success");
+            }
+        }
+
+        function updateBodyWeight(val) {
+            const num = parseFloat(val);
+            if (!isNaN(num) && num > 0) {
+                appData.bodyWeight = num;
+                saveAppData();
+                showToast(`Peso corporeo aggiornato a ${num} kg!`, 'success');
+                const bwDisplay = document.getElementById('benchmark-bw-display');
+                if (bwDisplay) bwDisplay.innerText = `BW: ${num} kg`;
+            }
+        }
+
+        function renderSchedeTab() {
+            const container = document.getElementById('tab-schede');
+            if (!container) return;
+
+            if (activeWorkout) {
+                container.innerHTML = renderActiveWorkoutView();
+                attachSwipeListeners();
+            } else {
+                let html = `
+                    <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-900 dark:text-white">Schede Programma</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Suddivisione Allenamenti Giornalieri</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                `;
+
+                appData.routines.forEach(r => {
+                    html += `
+                        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                            <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                                <div>
+                                    <span class="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-none font-bold uppercase">${r.category}</span>
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white mt-1">${r.name}</h3>
+                                </div>
+                            </div>
+
+                            ${r.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 italic">${r.notes}</p>` : ''}
+
+                            <div class="space-y-2 border-t border-slate-300 dark:border-slate-800 pt-3">
+                                ${r.exercises.map((ex, exIdx) => `
+                                    <div class="bg-slate-200/50 dark:bg-slate-850 p-2.5 border border-slate-300 dark:border-slate-800 space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-900 dark:text-slate-200 font-bold">${ex.name}</span>
+                                            <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px]">${ex.sets} serie × ${ex.repMin}-${ex.repMax} reps</span></div>${progressionHTML(ex.id)}<div class="hidden">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="pt-2">
+                                <button onclick="startWorkoutFromRoutine('${r.id}')" class="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-xs rounded-none border border-emerald-500/30 transition flex items-center justify-center gap-1.5 active:scale-98">
+                                    ▶ AVVIA QUESTA SCHEDA
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                container.innerHTML = html;
+            }
+        }
+
+        function startWorkoutFromRoutine(routineId) {
+            const routine = appData.routines.find(r => r.id === routineId);
+            if (!routine) return;
+
+            activeWorkout = {
+                routineId: routine.id,
+                routineName: routine.name,
+                startTime: Date.now(),
+                elapsedSec: 0,
+                exercises: routine.exercises.map(ex => ({
+                    exId: ex.id,
+                    name: ex.name,
+                    targetRestSec: ex.restSec || 90,
+                    sets: Array.from({ length: ex.sets }, () => ({
+                        weight: ex.startWeight,
+                        reps: 1,
+                        completed: false
+                    }))
+                }))
+            };
+
+            startWorkoutTimer();
+            switchTab('schede');
+            showToast(`Sessione "${routine.name}" avviata!`, 'success');
+        }
+
+        function moveExerciseUp(exIdx) {
+            if (!activeWorkout || exIdx <= 0) return;
+            const temp = activeWorkout.exercises[exIdx];
+            activeWorkout.exercises[exIdx] = activeWorkout.exercises[exIdx - 1];
+            activeWorkout.exercises[exIdx - 1] = temp;
+            renderSchedeTab();
+        }
+
+        function moveExerciseDown(exIdx) {
+            if (!activeWorkout || exIdx >= activeWorkout.exercises.length - 1) return;
+            const temp = activeWorkout.exercises[exIdx];
+            activeWorkout.exercises[exIdx] = activeWorkout.exercises[exIdx + 1];
+            activeWorkout.exercises[exIdx + 1] = temp;
+            renderSchedeTab();
+        }
+
+        function openAddExerciseModal() {
+            document.getElementById('modal-add-exercise').classList.remove('hidden');
+        }
+
+        function confirmAddNewExercise() {
+            const name = document.getElementById('new-ex-name').value.trim();
+            const weight = parseFloat(document.getElementById('new-ex-weight').value) || 0;
+            const rest = parseInt(document.getElementById('new-ex-rest').value) || 90;
+
+            if (!name) {
+                showToast("Inserisci il nome dell'esercizio", "warning");
+                return;
+            }
+
+            if (activeWorkout) {
+                activeWorkout.exercises.push({
+                    name: name,
+                    targetRestSec: rest,
+                    sets: [
+                        { weight: weight, reps: 1, completed: false }
+                    ]
+                });
+                closeModal('modal-add-exercise');
+                document.getElementById('new-ex-name').value = '';
+                renderSchedeTab();
+                showToast(`Esercizio "${name}" aggiunto alla sessione!`, "success");
+            }
+        }
+
+        function addWorkoutSet(exIdx) {
+            if (!activeWorkout) return;
+            const ex = activeWorkout.exercises[exIdx];
+            const lastSet = ex.sets[ex.sets.length - 1];
+            const defaultWeight = lastSet ? lastSet.weight : 0;
+
+            ex.sets.push({
+                weight: defaultWeight,
+                reps: 1,
+                completed: false
+            });
+
+            renderSchedeTab();
+            showToast(`Set #${ex.sets.length} aggiunto a ${ex.name}`, 'info');
+        }
+
+        function removeWorkoutSet(exIdx, setIdx) {
+            if (!activeWorkout) return;
+            const sets = activeWorkout.exercises[exIdx].sets;
+            if (sets.length <= 1) {
+                showToast("Tieni almeno 1 set per esercizio", "warning");
+                return;
+            }
+            sets.splice(setIdx, 1);
+            renderSchedeTab();
+            showToast("Set eliminato", "info");
+        }
+
+        function renderActiveWorkoutView() {
+            if (!activeWorkout) return '';
+
+            let html = `
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between shadow-md">
+                    <div>
+                        <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Sessione in Corso</span>
+                        <h2 class="text-sm font-black text-slate-900 dark:text-white leading-tight">${activeWorkout.routineName}</h2>
+                    </div>
+                    <div class="text-right">
+                        <div id="live-workout-timer-display" class="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">00:00</div>
+                    </div>
+                </div>
+
+                <button onclick="openAddExerciseModal()" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-black text-xs rounded-none flex items-center justify-center gap-2 transition active:scale-98">
+                    ＋ AGGIUNGI NUOVO ESERCIZIO ALLA SESSIONE
+                </button>
+
+                <div class="space-y-4 pt-1">
+            `;
+
+            activeWorkout.exercises.forEach((ex, exIdx) => {
+                const isFirst = (exIdx === 0);
+                const isLast = (exIdx === activeWorkout.exercises.length - 1);
+
+                html += `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                        <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900 dark:text-white">${exIdx + 1}. ${ex.name}</h3>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">${ex.sets.length} serie attive</p>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="moveExerciseUp(${exIdx})" ${isFirst ? 'disabled class="opacity-30 p-1 text-slate-400 cursor-not-allowed"' : 'class="p-1.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300"'} title="Sposta su">
+                                    <span class="text-xs">↑</span>
+                                </button>
+                                <button onclick="moveExerciseDown(${exIdx})" ${isLast ? 'disabled class="opacity-30 p-1 text-slate-400 cursor-not-allowed"' : 'class="p-1.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300"'} title="Sposta giù">
+                                    <span class="text-xs">↓</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        ${progressionHTML(ex.exId)}
+                        ${renderExerciseRestPresetsHTML(exIdx, ex.targetRestSec)}
+
+                        <div class="space-y-2">
+                            ${ex.sets.map((st, setIdx) => `
+                                <div class="relative overflow-hidden border border-slate-300 dark:border-slate-800 rounded-none" id="set-row-${exIdx}-${setIdx}">
+                                    <button onclick="removeWorkoutSet(${exIdx}, ${setIdx})" class="swipe-del invisible absolute right-0 top-0 bottom-0 w-[80px] bg-rose-600 text-white font-black text-xs uppercase flex items-center justify-center gap-1 z-0 hover:bg-rose-700 transition">
+                                        ELIMINA
+                                    </button>
+
+                                    <div class="swipe-content relative z-10 bg-slate-200 dark:bg-slate-850 p-2 border-r border-slate-300 dark:border-slate-800 transition-transform duration-150 flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-1 text-xs font-black text-slate-500 dark:text-slate-400 min-w-[30px]">
+                                            <span>#${setIdx + 1}</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 flex-1">
+                                            <div class="flex-1 flex flex-col">
+                                                <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">KG / ZAV</span>
+                                                <input type="number" step="0.5" value="${st.weight}" onchange="updateWorkoutSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                            </div>
+
+                                            <div class="w-20 flex flex-col">
+                                                <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">REPS</span>
+                                                <input type="number" value="${st.reps}" onchange="updateWorkoutSet(${exIdx}, ${setIdx}, 'reps', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                            </div>
+                                        </div>
+
+                                        <span id="set-status-${exIdx}-${setIdx}" class="w-5 shrink-0 text-center text-emerald-500 font-black text-sm">${st.completed ? '✓' : ''}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <button onclick="addWorkoutSet(${exIdx})" class="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
+                            ＋ Aggiungi Set
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-2 mt-4 shadow-xl">
+                    <button onclick="finishActiveWorkout()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-none shadow-md transition active:scale-98 flex items-center justify-center gap-2">
+                        CONCLUDI E SALVA ALLENAMENTO
+                    </button>
+                    <button onclick="openConfirmModal('Annulla Sessione', 'Vuoi davvero uscire senza salvare?', cancelActiveWorkout)" class="w-full py-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition flex items-center justify-center gap-2">
+                        Annulla Sessione
+                    </button>
+                </div>
+            `;
+            return html;
+        }
+
+        function attachSwipeListeners() {
+            if (!activeWorkout) return;
+            activeWorkout.exercises.forEach((ex, exIdx) => {
+                ex.sets.forEach((st, setIdx) => {
+                    const row = document.getElementById(`set-row-${exIdx}-${setIdx}`);
+                    if (!row) return;
+                    const content = row.querySelector('.swipe-content');
+                    const del = row.querySelector('.swipe-del');
+                    if (!content || !del) return;
+
+                    let startX = 0, base = 0, currentX = 0, dragging = false;
+
+                    const setX = (x, animate) => {
+                        content.style.transition = animate ? 'transform 0.2s ease-out' : 'none';
+                        content.style.transform = `translateX(${x}px)`;
+                        currentX = x;
+                        if (x < 0) del.classList.remove('invisible');
+                    };
+                    const settle = () => {
+                        if (currentX < -50) {
+                            setX(-80, true);
+                        } else {
+                            setX(0, true);
+                            setTimeout(() => { if (currentX === 0) del.classList.add('invisible'); }, 220);
+                        }
+                    };
+                    const end = () => {
+                        if (!dragging) return;
+                        dragging = false;
+                        settle();
+                    };
+
+                    content.addEventListener('pointerdown', (e) => {
+                        if (e.target.tagName === 'INPUT') return;
+                        dragging = true;
+                        startX = e.clientX;
+                        base = currentX;
+                    });
+                    content.addEventListener('pointermove', (e) => {
+                        if (!dragging) return;
+                        setX(Math.max(-100, Math.min(0, base + e.clientX - startX)), false);
+                    });
+                    content.addEventListener('pointerup', end);
+                    content.addEventListener('pointercancel', end);
+                    content.addEventListener('pointerleave', end);
+                });
+            });
+        }
+
+        function attachSwipeListenersLegacy() {
+            if (!activeWorkout) return;
+            activeWorkout.exercises.forEach((ex, exIdx) => {
+                ex.sets.forEach((st, setIdx) => {
+                    const rowContainer = document.getElementById(`set-row-${exIdx}-${setIdx}`);
+                    if (!rowContainer) return;
+                    const content = rowContainer.querySelector('.swipe-content');
+                    if (!content) return;
+
+                    let startX = 0;
+                    let currentX = 0;
+                    let isSwiping = false;
+
+                    content.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].clientX;
+                        isSwiping = true;
+                        content.style.transition = 'none';
+                    }, { passive: true });
+
+                    content.addEventListener('touchmove', (e) => {
+                        if (!isSwiping) return;
+                        const diffX = e.touches[0].clientX - startX;
+                        if (diffX < 0) {
+                            currentX = Math.max(diffX, -100);
+                            content.style.transform = `translateX(${currentX}px)`;
+                        } else if (diffX > 0 && currentX < 0) {
+                            currentX = Math.min(0, currentX + diffX);
+                            content.style.transform = `translateX(${currentX}px)`;
+                        }
+                    }, { passive: true });
+
+                    content.addEventListener('touchend', () => {
+                        if (!isSwiping) return;
+                        isSwiping = false;
+                        content.style.transition = 'transform 0.2s ease-out';
+                        if (currentX < -50) {
+                            content.style.transform = 'translateX(-80px)';
+                        } else {
+                            content.style.transform = 'translateX(0px)';
+                        }
+                    });
+
+                    let isMouseDown = false;
+                    content.addEventListener('mousedown', (e) => {
+                        startX = e.clientX;
+                        isMouseDown = true;
+                        content.style.transition = 'none';
+                    });
+                    window.addEventListener('mousemove', (e) => {
+                        if (!isMouseDown) return;
+                        const diffX = e.clientX - startX;
+                        if (diffX < 0) {
+                            currentX = Math.max(diffX, -100);
+                            content.style.transform = `translateX(${currentX}px)`;
+                        }
+                    });
+                    window.addEventListener('mouseup', () => {
+                        if (!isMouseDown) return;
+                        isMouseDown = false;
+                        content.style.transition = 'transform 0.2s ease-out';
+                        if (currentX < -50) {
+                            content.style.transform = 'translateX(-80px)';
+                        } else {
+                            content.style.transform = 'translateX(0px)';
+                        }
+                    });
+                });
+            });
+        }
+
+        function updateWorkoutSet(exIdx, setIdx, field, val) {
+            if (!activeWorkout) return;
+            const setObj = activeWorkout.exercises[exIdx].sets[setIdx];
+            setObj[field] = parseFloat(val) || 0;
+            setObj.completed = true;
+            const stEl = document.getElementById(`set-status-${exIdx}-${setIdx}`);
+            if (stEl) stEl.textContent = '✓';
+            if (field === 'reps') startRestTimer(activeWorkout.exercises[exIdx].targetRestSec || 90);
+        }
+
+        function toggleSetComplete(exIdx, setIdx) {
+            if (!activeWorkout) return;
+            const setObj = activeWorkout.exercises[exIdx].sets[setIdx];
+            setObj.completed = !setObj.completed;
+
+            if (setObj.completed) {
+                const restSec = activeWorkout.exercises[exIdx].targetRestSec || 90;
+                startRestTimer(restSec);
+            }
+            renderSchedeTab();
+        }
+
+        function finishActiveWorkout() {
+            if (!activeWorkout) return;
+            let totalVolume = 0;
+            activeWorkout.exercises.forEach(ex => {
+                ex.sets.forEach(s => {
+                    if (s.completed) totalVolume += (s.weight * s.reps);
+                });
+            });
+
+            ensureCalendar();
+            appData.calendar.trainingDays[dateKey(new Date())] = (appData.routines.findIndex(r => r.id === activeWorkout.routineId) + 1) || true;
+            appData.history.unshift({
+                id: 'hist-' + Date.now(),
+                routineName: activeWorkout.routineName,
+                date: new Date().toISOString(),
+                durationSec: activeWorkout.elapsedSec || 0,
+                totalVolume: totalVolume,
+                exercises: activeWorkout.exercises.map(e => ({
+                    name: e.name,
+                    sets: e.sets.map(s => ({ weight: s.weight, reps: s.reps, completed: s.completed }))
+                }))
+            });
+
+            saveAppData();
+            cancelActiveWorkout();
+            showToast("Sessione completata e salvata!", "success");
+            switchTab('progressi');
+        }
+
+        function cancelActiveWorkout() {
+            if (workoutTimerInterval) clearInterval(workoutTimerInterval);
+            workoutTimerInterval = null;
+            activeWorkout = null;
+            document.getElementById('header-active-workout-pill').classList.add('hidden');
+            stopRestTimer();
+            closeModal('modal-confirm');
+            if (activeTab === 'schede') renderSchedeTab();
+            else if (activeTab === 'home') renderHomeTab();
+        }
+
+        function startWorkoutTimer() {
+            if (workoutTimerInterval) clearInterval(workoutTimerInterval);
+
+            const headerPill = document.getElementById('header-active-workout-pill');
+            if (headerPill) {
+                headerPill.classList.remove('hidden');
+            }
+
+            workoutTimerInterval = setInterval(() => {
+                if (!activeWorkout) return;
+                activeWorkout.elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
+                const timerEl = document.getElementById('header-workout-timer');
+                if (timerEl) timerEl.innerText = formatTimeHMS(activeWorkout.elapsedSec);
+                const liveTimerEl = document.getElementById('live-workout-timer-display');
+                if (liveTimerEl) liveTimerEl.innerText = formatTimeHMS(activeWorkout.elapsedSec);
+            }, 1000);
+        }
+
+        function startRestTimer(seconds) {
+            stopRestTimer();
+            restTimeTotal = seconds;
+            restTimeRemaining = seconds;
+            isRestPaused = false;
+
+            if (activeTab === 'home') {
+                document.getElementById('rest-timer-banner').classList.remove('hidden');
+            }
+            updateRestTimerUI();
+
+            restTimerInterval = setInterval(() => {
+                if (!isRestPaused) {
+                    restTimeRemaining--;
+                    updateRestTimerUI();
+
+                    if (restTimeRemaining <= 0) {
+                        stopRestTimer();
+                        playAudioBeep();
+                        showToast("Tempo di recupero terminato!", "warning");
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateRestTimerUI() {
+            const display = document.getElementById('rest-timer-display');
+            const progress = document.getElementById('rest-timer-progress');
+            if (display) display.innerText = formatTimeMS(restTimeRemaining);
+            if (progress && restTimeTotal > 0) {
+                progress.style.width = `${(restTimeRemaining / restTimeTotal) * 100}%`;
+            }
+        }
+
+        function adjustRestTimer(seconds) {
+            restTimeRemaining = Math.max(0, restTimeRemaining + seconds);
+            restTimeTotal = Math.max(restTimeTotal, restTimeRemaining);
+            updateRestTimerUI();
+        }
+
+        function togglePauseRestTimer() {
+            isRestPaused = !isRestPaused;
+            document.getElementById('btn-pause-rest').innerHTML = isRestPaused ? `<i>▶</i>` : `<i>⏸</i>`;
+        }
+
+        function stopRestTimer() {
+            if (restTimerInterval) clearInterval(restTimerInterval);
+            restTimerInterval = null;
+            document.getElementById('rest-timer-banner').classList.add('hidden');
+        }
+
+        function playAudioBeep() {
+            if (!appData.settings.soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.8);
+            } catch (e) {}
+        }
+
+        function toggleAudioSetting() {
+            appData.settings.soundEnabled = !appData.settings.soundEnabled;
+            saveAppData();
+            const cb = document.getElementById('setting-sound-toggle');
+            if (cb) cb.checked = appData.settings.soundEnabled;
+            showToast(appData.settings.soundEnabled ? "Audio attivo" : "Audio disattivato", "info");
+        }
+
+        function switchTestSubTab(sub) {
+            ['1rm', 'benchmarks', 'history'].forEach(s => {
+                document.getElementById(`subtab-${s}`).classList.add('hidden');
+                document.getElementById(`subtab-btn-${s}`).className = "flex-1 py-1.5 rounded-none transition text-slate-500 dark:text-slate-400";
+            });
+            document.getElementById(`subtab-${sub}`).classList.remove('hidden');
+            document.getElementById(`subtab-btn-${sub}`).className = "flex-1 py-1.5 rounded-none transition text-emerald-600 dark:text-emerald-400 bg-slate-200 dark:bg-slate-800 font-bold";
+
+            if (sub === 'history') renderTestHistory();
+        }
+
+        function renderTestTab() {}
+
+        function compute1RM() {
+            const weight = parseFloat(document.getElementById('calc-weight').value) || 0;
+            const reps = parseInt(document.getElementById('calc-reps').value) || 0;
+            if (weight <= 0 || reps <= 0) return;
+
+            const calc1RM = Math.round(weight * (1 + reps / 30));
+            document.getElementById('res-1rm-val').innerText = `${calc1RM} kg`;
+            document.getElementById('pct-95').innerText = `${Math.round(calc1RM * 0.95)} kg`;
+            document.getElementById('pct-90').innerText = `${Math.round(calc1RM * 0.90)} kg`;
+            document.getElementById('pct-85').innerText = `${Math.round(calc1RM * 0.85)} kg`;
+            document.getElementById('pct-80').innerText = `${Math.round(calc1RM * 0.80)} kg`;
+            document.getElementById('1rm-result-card').classList.remove('hidden');
+        }
+
+        function saveCurrent1RM() {
+            const exName = document.getElementById('calc-exercise-name').value.trim() || '1RM';
+            const weight = parseFloat(document.getElementById('calc-weight').value) || 0;
+            const valText = document.getElementById('res-1rm-val').innerText;
+
+            appData.tests.unshift({
+                id: 'test-' + Date.now(),
+                type: '1RM',
+                exercise: exName,
+                weight: weight,
+                calculated1RM: parseInt(valText) || weight,
+                date: new Date().toISOString().split('T')[0]
+            });
+            saveAppData();
+            showToast("Massimale salvato!", "success");
+        }
+
+        function renderTestHistory() {
+            const container = document.getElementById('tests-history-list');
+            if (!container) return;
+
+            let html = '';
+            appData.tests.forEach(t => {
+                html += `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3 flex items-center justify-between">
+                        <div>
+                            <span class="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-none font-bold">1RM BENCHMARK</span>
+                            <div class="text-xs font-bold text-slate-900 dark:text-white mt-1">${t.exercise}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">${t.calculated1RM} kg</div>
+                            <div class="text-[10px] text-slate-500">${t.date}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderProgressiTab() {
+            const select = document.getElementById('stats-exercise-select');
+            const names = new Set();
+            appData.routines.forEach(r => r.exercises.forEach(e => names.add(e.name)));
+            select.innerHTML = Array.from(names).map(n => `<option value="${n}">${n}</option>`).join('');
+            renderExerciseChart();
+            renderWorkoutHistoryList();
+        }
+
+        function renderExerciseChart() {
+            const ctx = document.getElementById('exerciseChart').getContext('2d');
+            if (activeExerciseChart) activeExerciseChart.destroy();
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#94a3b8' : '#475569';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+            activeExerciseChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['04/09', 'Sett 2', 'Sett 3', 'Sett 4'],
+                    datasets: [{
+                        label: 'Carico (kg)',
+                        data: [50, 52.5, 55, 57.5],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        fill: true,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } },
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function renderWorkoutHistoryList() {
+            const container = document.getElementById('workout-history-list');
+            if (!container) return;
+
+            let html = '';
+            appData.history.forEach(h => {
+                const dateStr = new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+                html += `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">${h.routineName}</h4>
+                            <div class="text-[10px] text-slate-500 dark:text-slate-400">${dateStr}</div>
+                        </div>
+                        <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">${h.totalVolume || 0} kg totali</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderImpostazioniTab() {
+            document.getElementById('setting-sound-toggle').checked = appData.settings.soundEnabled;
+        }
+
+        function exportDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `FitPro_Mammana_Backup.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importDataJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    appData = JSON.parse(e.target.result);
+                    saveAppData();
+                    applyTheme(appData.settings.theme || 'dark');
+                    showToast("Dati importati!", "success");
+                    switchTab('home');
+                } catch (err) {}
+            };
+            reader.readAsText(file);
+        }
+
+        function executeResetData() {
+            appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+            saveAppData();
+            applyTheme('dark');
+            closeModal('modal-confirm');
+            switchTab('home');
+            showToast("Programma ripristinato!", "info");
+        }
+
+        function openConfirmModal(title, msg, onConfirmCallback) {
+            document.getElementById('confirm-modal-title').innerText = title;
+            document.getElementById('confirm-modal-msg').innerText = msg;
+            document.getElementById('confirm-modal-action-btn').onclick = onConfirmCallback;
+            document.getElementById('modal-confirm').classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-3 rounded-none border text-xs font-bold text-center bg-slate-100 dark:bg-slate-900 border-slate-400 dark:border-slate-700 text-slate-900 dark:text-white shadow-2xl`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function formatTimeHMS(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function formatTimeMS(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAppData();
+            switchTab('home');
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+        }
+    </script>
+</body>
+</html>
