@@ -10,44 +10,70 @@
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>FitPro Mobile - Programma Andrea Mammana</title>
+    <script>
+        // Applica lo stile salvato prima di disegnare la pagina, per evitare un lampo di colori.
+        document.documentElement.dataset.style = 'fitness';
+        try { document.documentElement.dataset.style = JSON.parse(localStorage.getItem('fitpro_mammana_v9_5tabs')).settings.style || 'fitness'; } catch (e) {}
+    </script>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
+        const themeScale = (prefix, shades) => Object.fromEntries(shades.map(s => [s, `rgb(var(--${prefix}-${s}) / <alpha-value>)`]));
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            950: '#090d16',
-                            900: '#111827',
-                            850: '#1a2234',
-                            800: '#1f293d',
-                            750: '#28354d',
-                        },
-                        emerald: {
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669',
-                        },
-                        cyan: {
-                            400: '#22d3ee',
-                            500: '#06b6d4',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        slate: themeScale('s', [100, 200, 300, 400, 500, 600, 700, 750, 800, 850, 900, 950]),
+                        emerald: themeScale('e', [400, 500, 600]),
+                        cyan: themeScale('c', [400, 500, 600]),
+                        amber: themeScale('a', [300, 400, 500, 600])
                     }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
-        :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        :root {
+            box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+            --font: 'Inter', sans-serif;
+            --s-100: 241 245 249; --s-200: 226 232 240; --s-300: 203 213 225; --s-400: 148 163 184; --s-500: 100 116 139; --s-600: 71 85 105;
+            --s-700: 51 65 85; --s-750: 40 53 77; --s-800: 31 41 61; --s-850: 26 34 52; --s-900: 17 24 39; --s-950: 9 13 22;
+            --e-400: 52 211 153; --e-500: 16 185 129; --e-600: 5 150 105;
+            --c-400: 34 211 238; --c-500: 6 182 212; --c-600: 8 145 178;
+            --a-300: 252 211 77; --a-400: 251 191 36; --a-500: 245 158 11; --a-600: 217 119 6;
+        }
+
+        /* Fitness: nero pieno, card arrotondate senza bordi, titoli grandi, accento lime */
+        html[data-style="fitness"] {
+            --font: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            --s-100: 255 255 255; --s-200: 242 242 247; --s-300: 209 209 214; --s-400: 152 152 157; --s-500: 142 142 147; --s-600: 99 99 102;
+            --s-700: 72 72 74; --s-750: 58 58 60; --s-800: 58 58 60; --s-850: 44 44 46; --s-900: 28 28 30; --s-950: 0 0 0;
+            --e-400: 166 255 0; --e-500: 166 240 20; --e-600: 62 130 0;
+            --c-400: 30 234 239; --c-500: 30 215 225; --c-600: 0 118 134;
+            --a-300: 255 204 102; --a-400: 255 179 64; --a-500: 255 159 10; --a-600: 196 106 0;
+        }
+        html[data-style="fitness"] :is(.rounded-none, .border, button, input, select, textarea) { border-radius: 12px; }
+        html[data-style="fitness"] :is(.shadow-md, .shadow-sm, .shadow-2xl) { border-radius: 18px; box-shadow: none; }
+        html[data-style="fitness"] .border:not([class*="border-emerald"], [class*="border-cyan"], [class*="border-amber"], [class*="border-rose"], .border-dashed) { border-color: transparent; }
+        html[data-style="fitness"] button.bg-emerald-500 { border-radius: 999px; }
+        html[data-style="fitness"] .uppercase { text-transform: none; letter-spacing: normal; }
+        html[data-style="fitness"] .text-\[8px\] { font-size: 10px; }
+        html[data-style="fitness"] .text-\[9px\] { font-size: 11px; }
+        html[data-style="fitness"] .text-\[10px\] { font-size: 12px; }
+        html[data-style="fitness"] h2 { font-size: 1.75rem; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800; }
+        html[data-style="fitness"] :is(h3, h4) { font-size: 1rem; line-height: 1.25; letter-spacing: -0.01em; font-weight: 700; }
+        html[data-style="fitness"] .session-title { font-size: 1.25rem; font-weight: 800; }
+
+        .drag-handle { touch-action: none; cursor: grab; }
+        .reordering .drag-hide { display: none; }
+        .reordering { user-select: none; }
+        .dragging { position: relative; z-index: 20; outline: 2px solid rgb(var(--e-500)); outline-offset: -2px; }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             transition: background-color 0.2s ease, color 0.2s ease;
@@ -73,18 +99,19 @@
                     <i class="fa-solid fa-bolt">⚡</i>
                 </div>
                 <div>
-                    <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">FitPro <span class="text-emerald-600 dark:text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-none bg-emerald-500/10 border border-emerald-500/30">MAMMANA</span></h1>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Calisthenics & Powerlifting</p>
+                    <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">FitPro <span id="header-badge" class="text-emerald-600 dark:text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-none bg-emerald-500/10 border border-emerald-500/30">MAMMANA</span></h1>
+                    <p id="header-subtitle" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Calisthenics & Powerlifting</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <div id="header-active-workout-pill" class="hidden">
-                    <button onclick="switchTab('schede')" class="px-2.5 py-1 rounded-none bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 animate-pulse">
-                        <span class="w-2 h-2 bg-emerald-500 dark:bg-emerald-400"></span>
-                        <span id="header-workout-timer">00:00</span>
-                    </button>
-                </div>
+                <button id="header-rest-pill" onclick="toggleRestControls()" aria-label="Timer di recupero: tocca per i comandi" class="hidden h-9 px-2 bg-cyan-500/15 border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 text-sm font-bold font-mono flex items-center gap-1">
+                    <span aria-hidden="true">⏱</span><span id="header-rest-time">00:00</span>
+                </button>
+
+                <button id="header-workout-pill" onclick="switchTab('schede')" aria-label="Timer complessivo allenamento" class="hidden h-9 px-2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-sm font-bold font-mono flex items-center">
+                    <span class="workout-clock">00:00</span>
+                </button>
 
                 <button onclick="toggleTheme()" id="btn-theme-toggle" class="w-9 h-9 rounded-none bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 hover:opacity-90 active:scale-95 transition" title="Cambia Tema">
                     <i id="icon-theme" class="fa-solid fa-moon text-xs">☾</i>
@@ -143,12 +170,12 @@
             <section id="tab-test" class="tab-content hidden space-y-4">
                 <div>
                     <h2 class="text-lg font-black text-slate-900 dark:text-white">Test & Benchmarks</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Massimali Ufficiali e Calcolatore 1RM</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Massimali attuali e Calcolatore 1RM</p>
                 </div>
 
                 <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-none border border-slate-300 dark:border-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400">
                     <button onclick="switchTestSubTab('1rm')" id="subtab-btn-1rm" class="flex-1 py-1.5 rounded-none text-emerald-600 dark:text-emerald-400 bg-slate-200 dark:bg-slate-800 transition">Calcolatore 1RM</button>
-                    <button onclick="switchTestSubTab('benchmarks')" id="subtab-btn-benchmarks" class="flex-1 py-1.5 rounded-none transition">Massimali Scheda</button>
+                    <button onclick="switchTestSubTab('benchmarks')" id="subtab-btn-benchmarks" class="flex-1 py-1.5 rounded-none transition">Massimali</button>
                     <button onclick="switchTestSubTab('history')" id="subtab-btn-history" class="flex-1 py-1.5 rounded-none transition">Storico Test</button>
                 </div>
 
@@ -159,8 +186,8 @@
                         </h3>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico / Zavorra (kg)</label>
-                                <input type="number" id="calc-weight" value="45" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-black text-sm focus:border-emerald-500 focus:outline-none">
+                                <label for="calc-weight" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico / Zavorra (kg)</label>
+                                <input type="number" id="calc-weight" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-black text-sm focus:border-emerald-500 focus:outline-none">
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Ripetizioni</label>
@@ -168,8 +195,8 @@
                             </div>
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Nome Esercizio</label>
-                            <input type="text" id="calc-exercise-name" value="Dips Zavorrati" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none">
+                            <label for="calc-lift" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Massimale da calcolare</label>
+                            <select id="calc-lift" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"></select>
                         </div>
                         <button onclick="compute1RM()" class="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-black text-xs rounded-none shadow-md hover:opacity-95 transition">
                             CALCOLA MASSIMALE
@@ -190,59 +217,16 @@
 
                         <div>
                             <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Tabella Percentuali di Carico Target</h4>
-                            <div class="grid grid-cols-4 gap-1.5 text-center text-xs">
-                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
-                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">95%</div>
-                                    <div id="pct-95" class="font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-mono">0 kg</div>
-                                </div>
-                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
-                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">90%</div>
-                                    <div id="pct-90" class="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">0 kg</div>
-                                </div>
-                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
-                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">85%</div>
-                                    <div id="pct-85" class="font-bold text-cyan-600 dark:text-cyan-400 mt-0.5 font-mono">0 kg</div>
-                                </div>
-                                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
-                                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">80%</div>
-                                    <div id="pct-80" class="font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-mono">0 kg</div>
-                                </div>
-                            </div>
+                            <div id="pct-table" class="grid grid-cols-4 gap-1.5 text-center text-xs"></div>
                         </div>
 
                         <button onclick="saveCurrent1RM()" class="w-full py-2 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-none hover:opacity-90 transition">
-                            Salva nel Registro Test
+                            Salva come massimale attuale
                         </button>
                     </div>
                 </div>
 
-                <div id="subtab-benchmarks" class="hidden space-y-3">
-                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
-                        <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
-                            <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Carichi 1RM dal PDF (04/09/2023)</h3>
-                            <span id="benchmark-bw-display" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">BW: 69 kg</span>
-                        </div>
-
-                        <div class="space-y-2 text-xs">
-                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
-                                <span class="font-bold text-slate-800 dark:text-slate-200">Squat Bilanciere</span>
-                                <span class="font-mono font-black text-emerald-600 dark:text-emerald-400">105.0 kg</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
-                                <span class="font-bold text-slate-800 dark:text-slate-200">Stacco da Terra</span>
-                                <span class="font-mono font-black text-emerald-600 dark:text-emerald-400">130.0 kg</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
-                                <span class="font-bold text-slate-800 dark:text-slate-200">Pull Up Zavorra</span>
-                                <span class="font-mono font-black text-cyan-600 dark:text-cyan-400">57.0 kg (22.5kg Zav)</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2.5 bg-slate-200 dark:bg-slate-850 rounded-none border border-slate-300 dark:border-slate-800">
-                                <span class="font-bold text-slate-800 dark:text-slate-200">Dips Zavorra</span>
-                                <span class="font-mono font-black text-cyan-600 dark:text-cyan-400">79.5 kg (45.0kg Zav)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div id="subtab-benchmarks" class="hidden space-y-3"></div>
 
                 <div id="subtab-history" class="hidden space-y-3">
                     <div id="tests-history-list" class="space-y-2"></div>
@@ -271,6 +255,13 @@
                 <div>
                     <h2 class="text-lg font-black text-slate-900 dark:text-white">Impostazioni & Data</h2>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Gestisci preferenze e backup</p>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider border-b border-slate-300 dark:border-slate-800 pb-2">
+                        Stile dell'app
+                    </h3>
+                    <div id="style-picker" class="space-y-2"></div>
                 </div>
 
                 <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
@@ -399,11 +390,57 @@
                     <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Recupero (s)</label><input type="number" id="re-rest" step="15" min="0" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
                     <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico iniziale (kg)</label><input type="number" id="re-weight" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
                 </div>
+                <div>
+                    <label for="re-lift" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Massimale collegato</label>
+                    <select id="re-lift" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></select>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Il carico si calcola se la progressione indica una percentuale, per esempio @55%.</p>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase">Progressione 6 settimane</div>
+                    <div id="re-progression" class="grid grid-cols-3 gap-1.5"></div>
+                </div>
             </div>
             <div class="flex gap-2 pt-2">
                 <button onclick="closeModal('modal-routine-ex')" class="flex-1 py-2 bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-xs rounded-none">Annulla</button>
                 <button onclick="saveRoutineExercise()" class="flex-1 py-2 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">SALVA</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-routine" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-xs rounded-none p-4 space-y-3 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                <h3 class="text-xs font-black uppercase text-slate-900 dark:text-white">Modifica Allenamento</h3>
+                <button onclick="closeModal('modal-routine')" aria-label="Chiudi" class="text-slate-400 hover:text-slate-100 text-xs">✕</button>
+            </div>
+            <div class="space-y-2">
+                <div>
+                    <label for="rm-name" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Titolo</label>
+                    <input type="text" id="rm-name" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label for="rm-category" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Categoria</label>
+                    <input type="text" id="rm-category" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label for="rm-notes" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Note</label>
+                    <textarea id="rm-notes" rows="2" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('modal-routine')" class="flex-1 py-2 bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-xs rounded-none">Annulla</button>
+                <button onclick="saveRoutine()" class="flex-1 py-2 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">SALVA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-day" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-sm max-h-[85vh] overflow-y-auto rounded-none p-4 space-y-3 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                <h3 id="day-title" class="text-xs font-black uppercase text-slate-900 dark:text-white"></h3>
+                <button onclick="closeModal('modal-day')" aria-label="Chiudi" class="w-8 h-8 -my-1 -mr-1 text-slate-500 dark:text-slate-400 text-sm">✕</button>
+            </div>
+            <div id="day-body" class="space-y-3"></div>
         </div>
     </div>
 
@@ -525,15 +562,24 @@
         };
 
         function progressionHTML(exId, wrap) {
-            const p = PROGRESSIONS[exId];
-            if (!p) return '';
-            return `<div class="${wrap ? 'flex flex-wrap gap-1' : 'flex gap-1 overflow-x-auto no-scrollbar'}">${p.map((v, i) => `<div class="shrink-0 max-w-[104px] px-1.5 py-1 bg-slate-200 dark:bg-slate-850 border border-slate-300 dark:border-slate-800 text-center"><div class="text-[8px] font-black uppercase text-slate-500 dark:text-slate-400">Sett ${i + 1}</div><div class="text-[10px] font-bold font-mono text-slate-900 dark:text-slate-100 leading-tight">${v}</div></div>`).join('')}</div>`;
+            const p = getProgression(exId).map((v, i) => [v, i]).filter(x => x[0]);
+            if (!p.length) return '';
+            const ex = findExercise(exId);
+            const week = programWeek();
+            return `<div class="${wrap ? 'flex flex-wrap gap-1' : 'flex gap-1 overflow-x-auto no-scrollbar'}">${p.map(([v, i]) => {
+                const load = exerciseLoad(ex, i + 1);
+                return `<div class="shrink-0 max-w-[104px] px-1.5 py-1 bg-slate-200 dark:bg-slate-850 border ${i === week - 1 && load !== null ? 'border-emerald-500' : 'border-slate-300 dark:border-slate-800'} text-center"><div class="text-[8px] font-black uppercase text-slate-500 dark:text-slate-400">Sett ${i + 1}</div><div class="text-[10px] font-bold font-mono text-slate-900 dark:text-slate-100 leading-tight">${esc(v)}</div>${load !== null ? `<div class="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400 leading-tight">${kgLabel(load)}</div>` : ''}</div>`;
+            }).join('')}</div>`;
+        }
+
+        function getProgression(exId) {
+            const custom = appData.progressions && appData.progressions[exId];
+            return custom || PROGRESSIONS[exId] || [];
         }
 
         let appData = null;
         let activeTab = 'home';
         let activeWorkout = null;
-        let workoutTimerInterval = null;
 
         let restTimerInterval = null;
         let restTimeRemaining = 0;
@@ -541,6 +587,42 @@
         let isRestPaused = false;
 
         let activeExerciseChart = null;
+
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        /* ===== Salvataggio automatico della sessione in corso ===== */
+        const DRAFT_KEY = STORAGE_KEY + '_sessione';
+
+        function saveDraft() {
+            try {
+                if (activeWorkout) {
+                    activeWorkout.savedAt = Date.now();
+                    localStorage.setItem(DRAFT_KEY, JSON.stringify(activeWorkout));
+                } else {
+                    localStorage.removeItem(DRAFT_KEY);
+                }
+            } catch (e) {}
+        }
+
+        function restoreDraft() {
+            try {
+                const draft = JSON.parse(localStorage.getItem(DRAFT_KEY));
+                if (!draft || !Array.isArray(draft.exercises)) return false;
+                // Il tempo in cui l'app è rimasta chiusa non conta nella durata della sessione.
+                draft.startTime += Date.now() - (draft.savedAt || Date.now());
+                activeWorkout = draft;
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        window.addEventListener('pagehide', saveDraft);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') saveDraft();
+        });
 
         function loadAppData() {
             try {
@@ -554,7 +636,194 @@
             } catch (e) {
                 appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
             }
+            migrateData();
             applyTheme(appData.settings.theme || 'dark');
+            applyStyle(appData.settings.style);
+        }
+
+        /* ===== Massimali attuali: guidano i carichi degli allenamenti ===== */
+        // body: la zavorra si somma a metà del peso corporeo, come nei calcoli della scheda.
+        const LIFTS = [
+            { id: 'squat', name: 'Squat Bilanciere', body: false },
+            { id: 'stacco', name: 'Stacco da Terra', body: false },
+            { id: 'pullup', name: 'Pull Up Zavorrati', body: true },
+            { id: 'dips', name: 'Dips Zavorrati', body: true }
+        ];
+        const LIFT_BY_EXERCISE = { 'ex-103': 'dips', 'ex-105': 'stacco', 'ex-106': 'squat', 'ex-305': 'squat', 'ex-401': 'pullup' };
+        const SEEDED_2023_WEIGHTS = { 'ex-103': 5.3, 'ex-105': 71.5, 'ex-106': 57.8, 'ex-305': 52.5, 'ex-401': -3.2 };
+        const SEEDED_2023_TESTS = ['test-1', 'test-2', 'test-3', 'test-4'];
+
+        // Toglie una sola volta i valori del 2023. Le modifiche fatte a mano restano.
+        function migrateData() {
+            if (!appData.maxes) appData.maxes = {};
+            if (appData.removed2023) return;
+            appData.tests = (appData.tests || []).filter(t => !SEEDED_2023_TESTS.includes(t.id));
+            delete appData.datePDF;
+            appData.routines.forEach(r => r.exercises.forEach(ex => {
+                if (!LIFT_BY_EXERCISE[ex.id]) return;
+                ex.lift = LIFT_BY_EXERCISE[ex.id];
+                if (ex.startWeight === SEEDED_2023_WEIGHTS[ex.id]) ex.startWeight = 0;
+                ex.name = ex.name.replace(/\s*\(@\d+% 1RM\)/, '').replace(/\(Buca @\d+% 1RM\)/, '(Buca)');
+            }));
+            appData.removed2023 = true;
+            saveAppData();
+        }
+
+        function roundHalf(v) {
+            return Math.round(v * 2) / 2;
+        }
+
+        function kgLabel(v) {
+            return `${String(v).replace('.', ',')} kg`;
+        }
+
+        function bodyOffset(liftId) {
+            const lift = LIFTS.find(l => l.id === liftId);
+            return lift && lift.body ? (appData.bodyWeight || 0) / 2 : 0;
+        }
+
+        function liftLoad(liftId, maxValue, percent) {
+            const offset = bodyOffset(liftId);
+            return roundHalf((maxValue + offset) * percent / 100 - offset);
+        }
+
+        function programWeek() {
+            return appData.programWeek || 1;
+        }
+
+        function progressionPercent(text) {
+            const match = /@(\d+)%/.exec(text || '');
+            return match ? Number(match[1]) : null;
+        }
+
+        function findExercise(exId) {
+            for (const r of appData.routines) {
+                const ex = r.exercises.find(e => e.id === exId);
+                if (ex) return ex;
+            }
+            return null;
+        }
+
+        function exerciseLoad(ex, week) {
+            const max = ex && ex.lift && appData.maxes[ex.lift];
+            const percent = progressionPercent(getProgression(ex && ex.id)[week - 1]);
+            return max && percent ? liftLoad(ex.lift, max.value, percent) : null;
+        }
+
+        function lastUsedWeight(ex) {
+            for (const session of appData.history) {
+                const done = (session.exercises || []).find(e => e.exId === ex.id || e.name === ex.name);
+                const sets = done ? (done.sets || []).filter(s => s.completed) : [];
+                if (sets.length) return sets[sets.length - 1].weight;
+            }
+            return null;
+        }
+
+        // Massimale attuale, altrimenti ultimo peso usato, altrimenti il carico iniziale.
+        function plannedWeight(ex) {
+            const load = exerciseLoad(ex, programWeek());
+            if (load !== null) return load;
+            const last = lastUsedWeight(ex);
+            return last !== null ? last : ex.startWeight;
+        }
+
+        function setLiftMax(liftId, rawValue) {
+            const value = parseFloat(rawValue);
+            if (rawValue === '' || isNaN(value)) {
+                delete appData.maxes[liftId];
+                saveAppData();
+                renderMaximals();
+                return;
+            }
+            const lift = LIFTS.find(l => l.id === liftId);
+            const date = dateKey(new Date());
+            appData.maxes[liftId] = { value, date };
+            appData.tests.unshift({ id: 'test-' + Date.now(), type: '1RM', exercise: lift.name, weight: value, calculated1RM: value, date });
+            saveAppData();
+            renderMaximals();
+            const linked = appData.routines.reduce((sum, r) => sum + r.exercises.filter(e => e.lift === liftId).length, 0);
+            showToast(`Massimale salvato: ${linked} ${linked === 1 ? 'esercizio aggiornato' : 'esercizi aggiornati'}`, 'success');
+        }
+
+        function setProgramWeek(week) {
+            appData.programWeek = week;
+            saveAppData();
+            renderMaximals();
+        }
+
+        function renderMaximals() {
+            const container = document.getElementById('subtab-benchmarks');
+            const week = programWeek();
+            const weekButtons = [1, 2, 3, 4, 5, 6].map(w => `<button onclick="setProgramWeek(${w})" aria-pressed="${w === week}" class="py-2 text-xs font-black border ${w === week ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200'}">${w}</button>`).join('');
+            const cards = LIFTS.map(lift => {
+                const max = appData.maxes[lift.id];
+                const linked = [];
+                appData.routines.forEach(r => r.exercises.filter(e => e.lift === lift.id).forEach(e => linked.push(e)));
+                const rows = linked.map(ex => {
+                    const percent = progressionPercent(getProgression(ex.id)[week - 1]);
+                    const load = exerciseLoad(ex, week);
+                    return `<div class="flex items-center justify-between gap-2 text-xs border-t border-slate-300 dark:border-slate-800 pt-1.5">
+                        <span class="text-slate-700 dark:text-slate-300">${esc(ex.name)}${percent ? ` @${percent}%` : ''}</span>
+                        <span class="font-mono font-bold shrink-0 ${load === null ? 'text-slate-500 dark:text-slate-400' : 'text-emerald-600 dark:text-emerald-400'}">${load === null ? '—' : kgLabel(load)}</span>
+                    </div>`;
+                }).join('');
+                return `
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-2 shadow-md">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <label for="max-${lift.id}" class="block text-sm font-bold text-slate-900 dark:text-white">${lift.name}</label>
+                                <span class="block text-[10px] text-slate-500 dark:text-slate-400">${lift.body ? 'Solo la zavorra, in kg' : 'Peso massimo, in kg'}${max ? ` • ${parseKey(max.date).toLocaleDateString('it-IT')}` : ''}</span>
+                            </div>
+                            <input type="number" id="max-${lift.id}" step="0.5" value="${max ? max.value : ''}" placeholder="—" onchange="setLiftMax('${lift.id}', this.value)" class="w-20 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-2 py-2 text-center font-black text-sm font-mono text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        ${rows}
+                    </div>`;
+            }).join('');
+            container.innerHTML = `
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-2 shadow-md">
+                    <h3 class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Settimana del programma</h3>
+                    <div class="grid grid-cols-6 gap-1">${weekButtons}</div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Decide la percentuale usata per i carichi. La scegli tu: non dipende da S1–S4 del calendario.</p>
+                </div>
+                ${cards}`;
+        }
+
+        const STYLES = [
+            { id: 'fitness', name: 'Fitness', desc: 'Ispirato a Fitness di iOS: nero, card arrotondate, lime', bg: '#000000', card: '#1c1c1e', a: '#a6f014', b: '#1ed7e1', font: '-apple-system, Inter' },
+            { id: 'classico', name: 'Classico', desc: "L'aspetto di prima: ardesia, verde e azzurro", bg: '#090d16', card: '#1a2234', a: '#10b981', b: '#06b6d4', font: "'Inter'" }
+        ];
+
+        function applyStyle(id) {
+            const style = STYLES.find(s => s.id === id) || STYLES[0];
+            document.documentElement.dataset.style = style.id;
+            document.querySelector('meta[name="theme-color"]').content = style.bg;
+        }
+
+        function selectStyle(id) {
+            appData.settings.style = id;
+            saveAppData();
+            applyStyle(id);
+            renderImpostazioniTab();
+            showToast(`Stile ${STYLES.find(s => s.id === id).name} attivato`, 'success');
+        }
+
+        function renderStylePicker() {
+            const current = document.documentElement.dataset.style;
+            document.getElementById('style-picker').innerHTML = STYLES.map(s => `
+                <button onclick="selectStyle('${s.id}')" aria-pressed="${s.id === current}" class="w-full flex items-center gap-3 p-2 text-left border ${s.id === current ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-850'}">
+                    <span class="shrink-0 w-[72px] h-12 p-1.5 flex flex-col justify-between" style="background:${s.bg}; border:1px solid ${s.card};">
+                        <span class="block h-2" style="width:70%; background:${s.card}"></span>
+                        <span class="flex gap-1">
+                            <span class="block h-3 flex-1" style="background:${s.a}"></span>
+                            <span class="block h-3 w-3" style="background:${s.b}"></span>
+                        </span>
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-sm font-bold text-slate-900 dark:text-white" style="font-family:${s.font}, sans-serif">${s.name}</span>
+                        <span class="block text-[10px] text-slate-500 dark:text-slate-400">${s.desc}</span>
+                    </span>
+                    <span class="w-5 shrink-0 text-center font-black text-emerald-600 dark:text-emerald-400">${s.id === current ? '✓' : ''}</span>
+                </button>`).join('');
         }
 
         function saveAppData() {
@@ -607,29 +876,28 @@
                 activeNav.classList.add('text-emerald-600', 'dark:text-emerald-400');
             }
 
-            const restBanner = document.getElementById('rest-timer-banner');
-            if (restBanner) {
-                if ((activeTab === 'schede') && restTimerInterval !== null && restTimeRemaining > 0) {
-                    restBanner.classList.remove('hidden');
-                } else {
-                    restBanner.classList.add('hidden');
-                }
-            }
-
-            const headerPill = document.getElementById('header-active-workout-pill');
-            if (headerPill) {
-                if (activeWorkout !== null) {
-                    headerPill.classList.remove('hidden');
-                } else {
-                    headerPill.classList.add('hidden');
-                }
-            }
+            document.getElementById('rest-timer-banner').classList.add('hidden');
+            updateRestPill();
 
             if (tabId === 'home') renderHomeTab();
             else if (tabId === 'schede') renderSchedeTab();
             else if (tabId === 'test') renderTestTab();
             else if (tabId === 'progressi') renderProgressiTab();
             else if (tabId === 'impostazioni') renderImpostazioniTab();
+            updateWorkoutClock();
+        }
+
+        /* ===== Timer complessivo: sempre visibile in Schede e, durante la sessione, ovunque ===== */
+        function workoutClockText() {
+            return activeWorkout ? formatTimeMS(Math.floor((Date.now() - activeWorkout.startTime) / 1000)) : '00:00';
+        }
+
+        function updateWorkoutClock() {
+            const text = workoutClockText();
+            document.querySelectorAll('.workout-clock').forEach(el => { el.textContent = text; });
+            const visible = !!activeWorkout || activeTab === 'schede';
+            document.getElementById('header-workout-pill').classList.toggle('hidden', !visible);
+            document.getElementById('header-subtitle').classList.toggle('hidden', visible);
         }
 
         function renderExerciseRestPresetsHTML(exIdx, currentRestSec) {
@@ -669,10 +937,10 @@
             const isDeload = (curWeek === 4);
 
             let html = `
+                ${weekSummaryHTML()}
                 <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
                     <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
                         <span class="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-none">Profilo Atleta</span>
-                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400">PDF: ${appData.datePDF}</span>
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -703,7 +971,8 @@
                     <div class="bg-emerald-500/10 border border-emerald-500/30 p-3.5 flex items-center justify-between">
                         <div>
                             <span class="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400">Sessione in Corso</span>
-                            <h3 class="text-sm font-black text-slate-900 dark:text-white">${activeWorkout.routineName}</h3>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white">${esc(activeWorkout.routineName)}</h3>
+                            <div class="workout-clock text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400 leading-tight">${workoutClockText()}</div>
                         </div>
                         <button onclick="switchTab('schede')" class="px-3 py-1.5 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">
                             VAI ALLA SESSIONE
@@ -718,20 +987,35 @@
                         <h3 class="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Avvia Sezione Programma</h3>
                         <span class="text-[10px] text-slate-500">4 Giorni Split</span>
                     </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Scorri a destra un titolo o un esercizio per modificarlo. Trascina ⠿ per cambiare l'ordine.</p>
 
                     <div class="grid grid-cols-1 gap-2.5">
             `;
 
             appData.routines.forEach(r => {
+                const isOpen = !(appData.settings.homeCollapsed || {})[r.id];
                 html += `
-                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between hover:border-slate-400 dark:hover:border-slate-700 transition shadow-sm">
-                        <div>
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">${r.name}</h4>
-                            <p class="text-[10px] text-slate-500 dark:text-slate-400">${r.exercises.length} Esercizi • ${r.category}</p>
+                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none shadow-sm overflow-hidden">
+                        <div class="relative overflow-hidden">
+                            <button onclick="openRoutineModal('${r.id}')" class="rt-edit invisible absolute left-0 top-0 bottom-0 w-[84px] bg-cyan-600 text-white font-black text-[11px] uppercase flex items-center justify-center">MODIFICA</button>
+                            <div data-rid="${r.id}" data-title="1" class="rt-content swipe-content relative z-10 bg-slate-100 dark:bg-slate-900 p-3 flex items-center gap-2 cursor-pointer">
+                                <button onclick="toggleHomeRoutine('${r.id}')" aria-label="${isOpen ? 'Nascondi' : 'Mostra'} esercizi" aria-expanded="${isOpen}" class="w-8 h-9 shrink-0 text-slate-500 dark:text-slate-400 font-black">${isOpen ? '▾' : '▸'}</button>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">${esc(r.name)}</h4>
+                                    <p class="text-[10px] text-slate-500 dark:text-slate-400">${r.exercises.length} Esercizi${r.category ? ' • ' + esc(r.category) : ''}</p>
+                                </div>
+                                <button onclick="startWorkoutFromRoutine('${r.id}')" class="px-3 py-2 shrink-0 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black rounded-none flex items-center gap-1.5 transition active:scale-95">
+                                    ⚡ Inizia
+                                </button>
+                            </div>
                         </div>
-                        <button onclick="startWorkoutFromRoutine('${r.id}')" class="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-black rounded-none flex items-center gap-1.5 transition active:scale-95">
-                            ⚡ Inizia
-                        </button>
+                        ${isOpen ? `
+                            <div class="px-3 pb-3 space-y-2">
+                                <div data-reorder-list="${r.id}" class="space-y-1.5">
+                                    ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx, false)).join('')}
+                                </div>
+                                <button onclick="openRoutineExerciseModal('${r.id}', null)" class="w-full py-2 bg-slate-200 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none">＋ Aggiungi Esercizio</button>
+                            </div>` : ''}
                     </div>
                 `;
             });
@@ -742,6 +1026,37 @@
             `;
 
             container.innerHTML = html;
+            bindRoutineInteractions(container);
+        }
+
+        function toggleHomeRoutine(routineId) {
+            const collapsed = appData.settings.homeCollapsed || (appData.settings.homeCollapsed = {});
+            collapsed[routineId] = !collapsed[routineId];
+            saveAppData();
+            renderHomeTab();
+        }
+
+        function weekSummaryHTML() {
+            const monday = mondayOf(new Date()).getTime();
+            const week = appData.history.filter(h => new Date(h.date).getTime() >= monday);
+            const goal = appData.routines.length;
+            const seconds = week.reduce((sum, h) => sum + (h.durationSec || 0), 0);
+            const volume = week.reduce((sum, h) => sum + (h.totalVolume || 0), 0);
+            const circumference = 2 * Math.PI * 30;
+            const filled = circumference * Math.min(1, goal ? week.length / goal : 0);
+            return `
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 shadow-md flex items-center gap-4">
+                    <svg class="w-20 h-20 shrink-0 text-emerald-500" viewBox="0 0 80 80" role="img" aria-label="${week.length} allenamenti su ${goal} questa settimana">
+                        <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-opacity="0.2" stroke-width="12"/>
+                        <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-dasharray="${filled} ${circumference}" transform="rotate(-90 40 40)"/>
+                    </svg>
+                    <div class="flex-1 min-w-0 space-y-1">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Questa settimana</h3>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Allenamenti <b class="text-emerald-600 dark:text-emerald-400">${week.length}/${goal}</b></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Tempo <b class="text-cyan-600 dark:text-cyan-400">${durationLabel(seconds)}</b></div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Peso totale <b class="text-amber-600 dark:text-amber-400">${roundKg(volume)} kg</b></div>
+                    </div>
+                </div>`;
         }
 
         /* ===== CALENDARIO MENSILE ===== */
@@ -771,7 +1086,11 @@
         }
         function ensureCalendar() {
             const _NAMES = { 'routine-lunedi': 'Allenamento 1', 'routine-martedi': 'Allenamento 2', 'routine-giovedi': 'Allenamento 3', 'routine-venerdi': 'Allenamento 4' };
-            appData.routines.forEach(r => { if (_NAMES[r.id]) r.name = _NAMES[r.id]; });
+            // Rinomina i vecchi dati una volta sola, altrimenti i titoli modificati verrebbero sovrascritti.
+            if (!appData.namesMigrated) {
+                appData.routines.forEach(r => { if (_NAMES[r.id]) r.name = _NAMES[r.id]; });
+                appData.namesMigrated = true;
+            }
             if (!appData.calendar) appData.calendar = { cycleStart: null, trainingDays: {} };
             const c = appData.calendar;
             if (!c.trainingDays) c.trainingDays = {};
@@ -791,15 +1110,69 @@
             if (calMonth > 11) { calMonth = 0; calYear++; }
             renderHomeTab();
         }
-        function calToggleDay(key) {
+        function sessionsOnDay(key) {
+            return appData.history.filter(h => dateKey(new Date(h.date)) === key);
+        }
+
+        function daySessionHTML(h) {
+            const exercises = (h.exercises || [])
+                .map(ex => ({ name: ex.name, sets: (ex.sets || []).filter(s => s.completed) }))
+                .filter(ex => ex.sets.length);
+            return `
+                <div class="bg-slate-200 dark:bg-slate-850 border border-slate-300 dark:border-slate-800 p-3 space-y-2.5">
+                    <div>
+                        <h4 class="text-sm font-black text-slate-900 dark:text-white">${esc(h.routineName)}</h4>
+                        <div class="text-[10px] text-slate-500 dark:text-slate-400">⏱ ${durationLabel(h.durationSec)} • <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${roundKg(h.totalVolume)} kg totali</span></div>
+                    </div>
+                    ${exercises.length ? exercises.map(ex => `
+                        <div class="border-t border-slate-300 dark:border-slate-800 pt-2">
+                            <div class="text-xs font-bold text-slate-900 dark:text-slate-200 mb-1">${esc(ex.name)}</div>
+                            <div class="flex flex-wrap gap-1">
+                                ${ex.sets.map((s, i) => `<span class="text-[11px] font-mono font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"><span class="text-slate-500 dark:text-slate-400">${i + 1}.</span> ${s.weight} kg × ${s.reps}</span>`).join('')}
+                            </div>
+                        </div>`).join('') : `<p class="text-xs text-slate-500 dark:text-slate-400">Nessun set registrato in questa sessione.</p>`}
+                </div>`;
+        }
+
+        function openDayModal(key) {
             ensureCalendar();
+            const mark = appData.calendar.trainingDays[key];
+            const sessions = sessionsOnDay(key);
+            const markedRoutine = typeof mark === 'number' ? appData.routines[mark - 1] : null;
+            const title = parseKey(key).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('day-title').innerText = title;
+            const markBtn = (value, label) => `<button onclick="setDayMark('${key}', ${value})" class="py-2 text-xs font-black border ${mark === value || (!mark && value === 0) ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200'}">${label}</button>`;
+            document.getElementById('day-body').innerHTML = `
+                ${sessions.length
+                    ? sessions.map(daySessionHTML).join('')
+                    : markedRoutine ? `
+                        <div class="bg-slate-200 dark:bg-slate-850 border border-slate-300 dark:border-slate-800 p-3 space-y-2">
+                            <div>
+                                <h4 class="text-sm font-black text-slate-900 dark:text-white">${esc(markedRoutine.name)}</h4>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Segnato a mano: pesi e ripetizioni non registrati</p>
+                            </div>
+                            ${markedRoutine.exercises.map(ex => `
+                                <div class="flex items-center justify-between gap-2 border-t border-slate-300 dark:border-slate-800 pt-1.5 text-xs">
+                                    <span class="font-bold text-slate-900 dark:text-slate-200">${esc(ex.name)}</span>
+                                    <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400 shrink-0">${ex.sets} × ${ex.repMin}-${ex.repMax}</span>
+                                </div>`).join('')}
+                        </div>`
+                    : `<p class="text-xs text-slate-500 dark:text-slate-400">${mark ? 'Giorno segnato a mano: nessun dettaglio registrato.' : 'Nessun allenamento registrato in questo giorno.'}</p>`}
+                <div class="space-y-1.5">
+                    <div class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400">Segna sul calendario</div>
+                    <div class="grid grid-cols-5 gap-1">
+                        ${markBtn(0, '—')}${appData.routines.map((r, i) => markBtn(i + 1, 'A' + (i + 1))).join('')}
+                    </div>
+                </div>`;
+            document.getElementById('modal-day').classList.remove('hidden');
+        }
+
+        function setDayMark(key, value) {
             const td = appData.calendar.trainingDays;
-            const v = td[key];
-            if (!v || v === true) td[key] = 1;
-            else if (v >= 4) delete td[key];
-            else td[key] = v + 1;
+            if (value) td[key] = value; else delete td[key];
             saveAppData();
             renderHomeTab();
+            openDayModal(key);
         }
         function calSetCycleStart(key) {
             ensureCalendar();
@@ -842,7 +1215,7 @@
                     if (trained) cls = (deload ? 'bg-amber-500 border-amber-500' : 'bg-emerald-500 border-emerald-500') + ' text-slate-950 font-black';
                     if (!inMonth) cls += ' opacity-30';
                     if (isToday) cls += ' ring-2 ring-cyan-500';
-                    rows += `<button onclick="calToggleDay('${key}')" class="h-9 text-xs font-bold border rounded-none ${cls} flex flex-col items-center justify-center leading-none"><span>${d.getDate()}</span>${typeof td[key] === 'number' ? `<span class="text-[8px] font-black">A${td[key]}</span>` : ''}</button>`;
+                    rows += `<button onclick="openDayModal('${key}')" class="h-9 text-xs font-bold border rounded-none ${cls} flex flex-col items-center justify-center leading-none"><span>${d.getDate()}</span>${typeof td[key] === 'number' ? `<span class="text-[8px] font-black">A${td[key]}</span>` : ''}</button>`;
                 }
                 rows += `</div>`;
                 cur = addDays(cur, 7);
@@ -869,7 +1242,7 @@
                         <span><b class="text-cyan-500">▢</b> Oggi</span>
                         <span>A1–A4 = Allenamento svolto</span>
                     </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Tocca un giorno per assegnare l'allenamento svolto (A1–A4): tocca ancora per cambiarlo, dopo A4 il giorno si svuota. Tocca l'etichetta S1–S4 di una riga per impostare quella settimana come Settimana 1: ogni 4ª settimana è di scarico (dopo 3 di carico). Le sessioni salvate vengono segnate in automatico.</p>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Tocca un giorno per rivedere l'allenamento svolto o per segnarlo a mano (A1–A4). Tocca l'etichetta S1–S4 di una riga per impostare quella settimana come Settimana 1: ogni 4ª settimana è di scarico (dopo 3 di carico). Le sessioni salvate vengono segnate in automatico.</p>
                 </div>`;
             container.insertAdjacentHTML('beforeend', html);
             if (activeWorkout) {
@@ -913,15 +1286,20 @@
             if (!container) return;
 
             if (activeWorkout) {
+                saveDraft();
                 container.innerHTML = renderActiveWorkoutView();
                 attachSwipeListeners();
+                enableDragReorder(document.getElementById('session-list'), (from, to) => {
+                    moveItem(activeWorkout.exercises, from, to);
+                    renderSchedeTab();
+                });
             } else {
                 let html = `
                     <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
                         <div>
                             <h2 class="text-lg font-black text-slate-900 dark:text-white">Schede Programma</h2>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Suddivisione Allenamenti Giornalieri</p>
-                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Scorri un esercizio a destra per modificarlo, a sinistra per eliminarlo.</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Tocca o scorri a destra un esercizio per modificarlo, a sinistra per eliminarlo. Trascina ⠿ per cambiare l'ordine. Usa la matita per il titolo.</p>
                         </div>
                     </div>
 
@@ -931,29 +1309,18 @@
                 appData.routines.forEach(r => {
                     html += `
                         <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
-                            <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
+                            <div class="flex items-center justify-between gap-2 border-b border-slate-300 dark:border-slate-800 pb-2">
                                 <div>
-                                    <span class="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-none font-bold uppercase">${r.category}</span>
-                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white mt-1">${r.name}</h3>
+                                    ${r.category ? `<span class="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-none font-bold uppercase">${esc(r.category)}</span>` : ''}
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white mt-1">${esc(r.name)}</h3>
                                 </div>
+                                <button onclick="openRoutineModal('${r.id}')" aria-label="Modifica titolo allenamento" title="Modifica titolo" class="w-9 h-9 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center active:scale-95 transition">${PENCIL_ICON}</button>
                             </div>
 
-                            ${r.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 italic">${r.notes}</p>` : ''}
+                            ${r.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 italic">${esc(r.notes)}</p>` : ''}
 
-                            <div class="space-y-2 border-t border-slate-300 dark:border-slate-800 pt-3">
-                                ${r.exercises.map((ex, exIdx) => `
-                                    <div class="relative overflow-hidden border border-slate-300 dark:border-slate-800">
-                                        <button onclick="openRoutineExerciseModal('${r.id}', ${exIdx})" class="rt-edit invisible absolute left-0 top-0 bottom-0 w-[84px] bg-cyan-600 text-white font-black text-[11px] uppercase flex items-center justify-center">MODIFICA</button>
-                                        <button onclick="confirmDeleteRoutineExercise('${r.id}', ${exIdx})" class="rt-del invisible absolute right-0 top-0 bottom-0 w-[84px] bg-rose-600 text-white font-black text-[11px] uppercase flex items-center justify-center">ELIMINA</button>
-                                        <div class="rt-content swipe-content relative z-10 bg-slate-200 dark:bg-slate-850 p-2.5 space-y-1.5">
-                                            <div class="flex items-center justify-between gap-2 text-xs">
-                                                <span class="text-slate-900 dark:text-slate-200 font-bold">${ex.name}</span>
-                                                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px] shrink-0">${ex.sets} serie × ${ex.repMin}-${ex.repMax} reps</span>
-                                            </div>
-                                            ${progressionHTML(ex.id, true)}
-                                        </div>
-                                    </div>
-                                `).join('')}
+                            <div data-reorder-list="${r.id}" class="space-y-2 border-t border-slate-300 dark:border-slate-800 pt-3">
+                                ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx, true)).join('')}
                             </div>
 
                             <button onclick="openRoutineExerciseModal('${r.id}', null)" class="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
@@ -971,20 +1338,101 @@
 
                 html += `</div>`;
                 container.innerHTML = html;
-                attachRoutineSwipe();
+                bindRoutineInteractions(container);
             }
+        }
+
+        const PENCIL_ICON = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.3V21h3.7L18.1 9.6l-3.7-3.7L3 17.3zM20.7 7c.4-.4.4-1 0-1.4l-2.3-2.3c-.4-.4-1-.4-1.4 0l-1.8 1.8 3.7 3.7L20.7 7z"/></svg>`;
+        const DRAG_HANDLE = `<span class="drag-handle w-8 h-9 -my-1 -ml-1 shrink-0 flex items-center justify-center text-slate-500 dark:text-slate-400" role="img" aria-label="Trascina per spostare"><svg class="w-4 h-5" viewBox="0 0 16 20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.8"/><circle cx="11" cy="4" r="1.8"/><circle cx="5" cy="10" r="1.8"/><circle cx="11" cy="10" r="1.8"/><circle cx="5" cy="16" r="1.8"/><circle cx="11" cy="16" r="1.8"/></svg></span>`;
+
+        function routineRowHTML(r, ex, exIdx, withProgression) {
+            return `
+                <div data-drag-item class="relative overflow-hidden border border-slate-300 dark:border-slate-800">
+                    <button onclick="openRoutineExerciseModal('${r.id}', ${exIdx})" class="rt-edit invisible absolute left-0 top-0 bottom-0 w-[84px] bg-cyan-600 text-white font-black text-[11px] uppercase flex items-center justify-center">MODIFICA</button>
+                    <button onclick="confirmDeleteRoutineExercise('${r.id}', ${exIdx})" class="rt-del invisible absolute right-0 top-0 bottom-0 w-[84px] bg-rose-600 text-white font-black text-[11px] uppercase flex items-center justify-center">ELIMINA</button>
+                    <div data-rid="${r.id}" data-idx="${exIdx}" class="rt-content swipe-content relative z-10 bg-slate-200 dark:bg-slate-850 p-2.5 flex ${withProgression ? 'items-start' : 'items-center'} gap-1.5 cursor-pointer">
+                        ${DRAG_HANDLE}
+                        <div class="flex-1 min-w-0 space-y-1.5">
+                            <div class="flex items-center justify-between gap-2 text-xs">
+                                <span class="text-slate-900 dark:text-slate-200 font-bold">${esc(ex.name)}</span>
+                                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px] shrink-0">${ex.sets} × ${ex.repMin}-${ex.repMax}</span>
+                            </div>
+                            ${withProgression ? `<div class="drag-hide">${progressionHTML(ex.id, true)}</div>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderRoutineViews() {
+            if (activeTab === 'home') renderHomeTab(); else renderSchedeTab();
+        }
+
+        function bindRoutineInteractions(container) {
+            attachRoutineSwipe(container);
+            container.querySelectorAll('[data-reorder-list]').forEach(list => {
+                enableDragReorder(list, (from, to) => moveRoutineExercise(list.dataset.reorderList, from, to));
+            });
+        }
+
+        /* ===== Trascinamento: premendo ⠿ le card si compattano, così basta un breve spostamento ===== */
+        function enableDragReorder(list, onDrop) {
+            list.querySelectorAll('.drag-handle').forEach(handle => {
+                handle.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const item = handle.closest('[data-drag-item]');
+                    const from = Array.from(list.children).indexOf(item);
+                    handle.setPointerCapture(e.pointerId);
+                    list.classList.add('reordering');
+                    item.classList.add('dragging');
+                    const box = item.getBoundingClientRect();
+                    window.scrollBy(0, box.top + box.height / 2 - e.clientY);
+
+                    // Sposta le card vicine, non quella trascinata: toglierla dalla pagina interromperebbe il tocco.
+                    const onMove = (ev) => {
+                        const y = ev.clientY;
+                        if (y < 100) window.scrollBy(0, -12);
+                        else if (y > window.innerHeight - 120) window.scrollBy(0, 12);
+                        let prev = item.previousElementSibling;
+                        while (prev && y < prev.getBoundingClientRect().top + prev.offsetHeight / 2) {
+                            list.insertBefore(prev, item.nextElementSibling);
+                            prev = item.previousElementSibling;
+                        }
+                        let next = item.nextElementSibling;
+                        while (next && y > next.getBoundingClientRect().top + next.offsetHeight / 2) {
+                            list.insertBefore(next, item);
+                            next = item.nextElementSibling;
+                        }
+                    };
+                    const onEnd = () => {
+                        handle.removeEventListener('pointermove', onMove);
+                        handle.removeEventListener('pointerup', onEnd);
+                        handle.removeEventListener('pointercancel', onEnd);
+                        list.classList.remove('reordering');
+                        item.classList.remove('dragging');
+                        onDrop(from, Array.from(list.children).indexOf(item));
+                    };
+                    handle.addEventListener('pointermove', onMove);
+                    handle.addEventListener('pointerup', onEnd);
+                    handle.addEventListener('pointercancel', onEnd);
+                });
+            });
+        }
+
+        function moveItem(list, from, to) {
+            list.splice(to, 0, list.splice(from, 1)[0]);
         }
 
         /* ===== Modifica / elimina / aggiungi esercizi nelle schede ===== */
         let routineExCtx = null;
 
-        function attachRoutineSwipe() {
+        function attachRoutineSwipe(container) {
             const W = 84;
-            document.querySelectorAll('#tab-schede .rt-content').forEach(content => {
+            container.querySelectorAll('.rt-content').forEach(content => {
                 const row = content.parentElement;
                 const edit = row.querySelector('.rt-edit');
                 const del = row.querySelector('.rt-del');
-                if (!edit || !del) return;
+                if (!edit) return;
 
                 let startX = 0, base = 0, cur = 0, dragging = false, moved = 0;
 
@@ -992,13 +1440,13 @@
                     content.style.transition = animate ? 'transform 0.2s ease-out' : 'none';
                     content.style.transform = `translateX(${x}px)`;
                     cur = x;
-                    if (x > 0) { edit.classList.remove('invisible'); del.classList.add('invisible'); }
-                    else if (x < 0) { del.classList.remove('invisible'); edit.classList.add('invisible'); }
+                    if (x > 0) { edit.classList.remove('invisible'); if (del) del.classList.add('invisible'); }
+                    else if (x < 0 && del) { del.classList.remove('invisible'); edit.classList.add('invisible'); }
                 };
                 const close = () => {
                     setX(0, true);
                     setTimeout(() => {
-                        if (cur === 0) { edit.classList.add('invisible'); del.classList.add('invisible'); }
+                        if (cur === 0) { edit.classList.add('invisible'); if (del) del.classList.add('invisible'); }
                     }, 220);
                 };
                 const settle = () => {
@@ -1006,13 +1454,18 @@
                     else if (cur < -40) setX(-W, true);
                     else close();
                 };
-                const end = () => {
+                const end = (e) => {
                     if (!dragging) return;
                     dragging = false;
-                    if (moved < 5 && cur !== 0) close(); else settle();
+                    if (e.type === 'pointerup' && moved < 5 && cur === 0) {
+                        if (content.dataset.title) openRoutineModal(content.dataset.rid);
+                        else openRoutineExerciseModal(content.dataset.rid, Number(content.dataset.idx));
+                    } else if (moved < 5 && cur !== 0) close();
+                    else settle();
                 };
 
                 content.addEventListener('pointerdown', (e) => {
+                    if (e.target.closest('button')) return;
                     dragging = true;
                     startX = e.clientX;
                     base = cur;
@@ -1022,7 +1475,7 @@
                     if (!dragging) return;
                     const dx = e.clientX - startX;
                     moved = Math.max(moved, Math.abs(dx));
-                    setX(Math.max(-W - 16, Math.min(W + 16, base + dx)), false);
+                    setX(Math.max(del ? -W - 16 : 0, Math.min(W + 16, base + dx)), false);
                 });
                 content.addEventListener('pointerup', end);
                 content.addEventListener('pointercancel', end);
@@ -1035,20 +1488,80 @@
             if (!r) return;
             routineExCtx = { rid: routineId, idx: idx };
             const ex = (idx === null) ? { name: '', sets: 3, repMin: 8, repMax: 10, restSec: 90, startWeight: 0 } : r.exercises[idx];
-            document.getElementById('re-title').innerText = (idx === null) ? 'Nuovo Esercizio' : 'Modifica Esercizio';
+            fillExerciseModal(ex, (idx === null) ? 'Nuovo Esercizio' : 'Modifica Esercizio');
+        }
+
+        // Dalla sessione: modifica la scheda e aggiorna subito l'esercizio in corso.
+        function openSessionExerciseModal(exIdx) {
+            const sessionEx = activeWorkout.exercises[exIdx];
+            const r = appData.routines.find(x => x.id === activeWorkout.routineId);
+            const idx = r ? r.exercises.findIndex(e => e.id === sessionEx.exId) : -1;
+            if (idx >= 0) {
+                openRoutineExerciseModal(r.id, idx);
+                routineExCtx.sessionIdx = exIdx;
+                return;
+            }
+            // Esercizio aggiunto solo a questa sessione: non esiste nella scheda.
+            routineExCtx = { rid: null, idx: null, sessionIdx: exIdx };
+            fillExerciseModal({ name: sessionEx.name, sets: sessionEx.sets.length, repMin: 1, repMax: 1, restSec: sessionEx.targetRestSec, startWeight: 0 }, 'Modifica Esercizio');
+        }
+
+        function fillExerciseModal(ex, title) {
+            document.getElementById('re-title').innerText = title;
             document.getElementById('re-name').value = ex.name;
             document.getElementById('re-sets').value = ex.sets;
             document.getElementById('re-repmin').value = ex.repMin;
             document.getElementById('re-repmax').value = ex.repMax;
             document.getElementById('re-rest').value = ex.restSec;
             document.getElementById('re-weight').value = ex.startWeight;
+            document.getElementById('re-lift').innerHTML = `<option value="">Nessuno</option>` + LIFTS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+            document.getElementById('re-lift').value = ex.lift || '';
+            const prog = ex.id ? getProgression(ex.id) : [];
+            document.getElementById('re-progression').innerHTML = [0, 1, 2, 3, 4, 5].map(i => `
+                <div>
+                    <label for="re-prog-${i}" class="text-[9px] font-bold text-slate-500 dark:text-slate-400 block mb-0.5 uppercase">Sett ${i + 1}</label>
+                    <input type="text" id="re-prog-${i}" value="${esc(prog[i] || '')}" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-1.5 py-1.5 text-slate-900 dark:text-white font-bold text-[11px] focus:outline-none focus:border-emerald-500">
+                </div>`).join('');
             document.getElementById('modal-routine-ex').classList.remove('hidden');
+        }
+
+        function moveRoutineExercise(routineId, from, to) {
+            moveItem(appData.routines.find(x => x.id === routineId).exercises, from, to);
+            saveAppData();
+            renderRoutineViews();
+        }
+
+        /* ===== Modifica titolo, categoria e note dell'allenamento ===== */
+        let routineEditId = null;
+
+        function openRoutineModal(routineId) {
+            const r = appData.routines.find(x => x.id === routineId);
+            if (!r) return;
+            routineEditId = routineId;
+            document.getElementById('rm-name').value = r.name;
+            document.getElementById('rm-category').value = r.category || '';
+            document.getElementById('rm-notes').value = r.notes || '';
+            document.getElementById('modal-routine').classList.remove('hidden');
+        }
+
+        function saveRoutine() {
+            const r = appData.routines.find(x => x.id === routineEditId);
+            if (!r) return;
+            const name = document.getElementById('rm-name').value.trim();
+            if (!name) { showToast("Inserisci il titolo dell'allenamento", 'warning'); return; }
+            r.name = name;
+            r.category = document.getElementById('rm-category').value.trim();
+            r.notes = document.getElementById('rm-notes').value.trim();
+            if (activeWorkout && activeWorkout.routineId === r.id) activeWorkout.routineName = name;
+            saveAppData();
+            closeModal('modal-routine');
+            renderRoutineViews();
+            showToast('Allenamento aggiornato', 'success');
         }
 
         function saveRoutineExercise() {
             if (!routineExCtx) return;
             const r = appData.routines.find(x => x.id === routineExCtx.rid);
-            if (!r) return;
             const name = document.getElementById('re-name').value.trim();
             if (!name) { showToast("Inserisci il nome dell'esercizio", 'warning'); return; }
             const sets = Math.max(1, parseInt(document.getElementById('re-sets').value) || 1);
@@ -1056,18 +1569,37 @@
             const repMax = Math.max(repMin, parseInt(document.getElementById('re-repmax').value) || repMin);
             const restSec = Math.max(0, parseInt(document.getElementById('re-rest').value) || 0);
             const startWeight = parseFloat(document.getElementById('re-weight').value) || 0;
+            const lift = document.getElementById('re-lift').value;
 
+            const sessionIdx = routineExCtx.sessionIdx;
+            if (activeWorkout && sessionIdx !== undefined) {
+                activeWorkout.exercises[sessionIdx].name = name;
+                activeWorkout.exercises[sessionIdx].targetRestSec = restSec;
+            }
+            if (!r) {
+                closeModal('modal-routine-ex');
+                routineExCtx = null;
+                renderSchedeTab();
+                showToast('Esercizio modificato', 'success');
+                return;
+            }
+
+            let exId;
             if (routineExCtx.idx === null) {
-                r.exercises.push({ id: 'ex-' + Date.now(), name, sets, repMin, repMax, restSec, startWeight });
+                exId = 'ex-' + Date.now();
+                r.exercises.push({ id: exId, name, sets, repMin, repMax, restSec, startWeight, lift });
                 showToast(`Esercizio "${name}" aggiunto`, 'success');
             } else {
-                Object.assign(r.exercises[routineExCtx.idx], { name, sets, repMin, repMax, restSec, startWeight });
+                exId = r.exercises[routineExCtx.idx].id;
+                Object.assign(r.exercises[routineExCtx.idx], { name, sets, repMin, repMax, restSec, startWeight, lift });
                 showToast('Esercizio modificato', 'success');
             }
+            if (!appData.progressions) appData.progressions = {};
+            appData.progressions[exId] = [0, 1, 2, 3, 4, 5].map(i => document.getElementById(`re-prog-${i}`).value.trim());
             saveAppData();
             closeModal('modal-routine-ex');
             routineExCtx = null;
-            renderSchedeTab();
+            renderRoutineViews();
         }
 
         function confirmDeleteRoutineExercise(routineId, idx) {
@@ -1076,7 +1608,7 @@
                 if (r) r.exercises.splice(idx, 1);
                 saveAppData();
                 closeModal('modal-confirm');
-                renderSchedeTab();
+                renderRoutineViews();
                 showToast('Esercizio eliminato dalla scheda', 'info');
             });
         }
@@ -1088,39 +1620,22 @@
             activeWorkout = {
                 routineId: routine.id,
                 routineName: routine.name,
+                startedAt: Date.now(),
                 startTime: Date.now(),
-                elapsedSec: 0,
                 exercises: routine.exercises.map(ex => ({
                     exId: ex.id,
                     name: ex.name,
                     targetRestSec: ex.restSec || 90,
                     sets: Array.from({ length: ex.sets }, () => ({
-                        weight: ex.startWeight,
+                        weight: plannedWeight(ex),
                         reps: 1,
                         completed: false
                     }))
                 }))
             };
 
-            startWorkoutTimer();
             switchTab('schede');
             showToast(`Sessione "${routine.name}" avviata!`, 'success');
-        }
-
-        function moveExerciseUp(exIdx) {
-            if (!activeWorkout || exIdx <= 0) return;
-            const temp = activeWorkout.exercises[exIdx];
-            activeWorkout.exercises[exIdx] = activeWorkout.exercises[exIdx - 1];
-            activeWorkout.exercises[exIdx - 1] = temp;
-            renderSchedeTab();
-        }
-
-        function moveExerciseDown(exIdx) {
-            if (!activeWorkout || exIdx >= activeWorkout.exercises.length - 1) return;
-            const temp = activeWorkout.exercises[exIdx];
-            activeWorkout.exercises[exIdx] = activeWorkout.exercises[exIdx + 1];
-            activeWorkout.exercises[exIdx + 1] = temp;
-            renderSchedeTab();
         }
 
         function removeWorkoutExercise(exIdx) {
@@ -1193,44 +1708,34 @@
             if (!activeWorkout) return '';
 
             let html = `
-                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between shadow-md">
-                    <div>
+                <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between gap-2 shadow-md">
+                    <div class="min-w-0">
                         <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Sessione in Corso</span>
-                        <h2 class="text-sm font-black text-slate-900 dark:text-white leading-tight">${activeWorkout.routineName}</h2>
+                        <span class="session-title block text-sm font-black text-slate-900 dark:text-white leading-tight">${esc(activeWorkout.routineName)}</span>
                     </div>
-                    <div class="text-right">
-                        <div id="live-workout-timer-display" class="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400">00:00</div>
-                    </div>
+                    ${activeWorkout.routineId ? `<button onclick="openRoutineModal('${activeWorkout.routineId}')" aria-label="Modifica titolo allenamento" class="w-9 h-9 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center">${PENCIL_ICON}</button>` : ''}
                 </div>
 
                 <button onclick="openAddExerciseModal()" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-black text-xs rounded-none flex items-center justify-center gap-2 transition active:scale-98">
                     ＋ AGGIUNGI NUOVO ESERCIZIO ALLA SESSIONE
                 </button>
 
-                <div class="space-y-4 pt-1">
+                <div id="session-list" class="space-y-4 pt-1">
             `;
 
             activeWorkout.exercises.forEach((ex, exIdx) => {
-                const isFirst = (exIdx === 0);
-                const isLast = (exIdx === activeWorkout.exercises.length - 1);
-
                 html += `
-                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
-                        <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
-                            <div>
-                                <h3 class="text-xs font-bold text-slate-900 dark:text-white">${exIdx + 1}. ${ex.name}</h3>
+                    <div data-drag-item class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
+                        <div class="flex items-center gap-1.5">
+                            ${DRAG_HANDLE}
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-xs font-bold text-slate-900 dark:text-white">${exIdx + 1}. ${esc(ex.name)}</h3>
                                 <p class="text-[10px] text-slate-500 dark:text-slate-400">${ex.sets.length} serie attive</p>
                             </div>
-                            <div class="flex items-center gap-1">
-                                <button onclick="moveExerciseUp(${exIdx})" ${isFirst ? 'disabled class="opacity-30 p-1 text-slate-400 cursor-not-allowed"' : 'class="p-1.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300"'} title="Sposta su">
-                                    <span class="text-xs">↑</span>
-                                </button>
-                                <button onclick="moveExerciseDown(${exIdx})" ${isLast ? 'disabled class="opacity-30 p-1 text-slate-400 cursor-not-allowed"' : 'class="p-1.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300"'} title="Sposta giù">
-                                    <span class="text-xs">↓</span>
-                                </button>
-                            </div>
+                            <button onclick="openSessionExerciseModal(${exIdx})" aria-label="Modifica esercizio" class="w-9 h-9 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center">${PENCIL_ICON}</button>
                         </div>
 
+                        <div class="drag-hide space-y-3">
                         ${progressionHTML(ex.exId)}
                         ${renderExerciseRestPresetsHTML(exIdx, ex.targetRestSec)}
 
@@ -1249,12 +1754,12 @@
                                         <div class="flex items-center gap-2 flex-1">
                                             <div class="flex-1 flex flex-col">
                                                 <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">KG / ZAV</span>
-                                                <input type="number" step="0.5" value="${st.weight}" onchange="updateWorkoutSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                                <input type="number" step="0.5" value="${st.weight}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
                                             </div>
 
                                             <div class="w-20 flex flex-col">
                                                 <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">REPS</span>
-                                                <input type="number" value="${st.reps}" onchange="updateWorkoutSet(${exIdx}, ${setIdx}, 'reps', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                                <input type="number" value="${st.reps}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'reps', this.value)" onchange="startRestTimer(activeWorkout.exercises[${exIdx}].targetRestSec || 90)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
                                             </div>
                                         </div>
 
@@ -1267,6 +1772,7 @@
                         <div class="flex gap-2"><button onclick="addWorkoutSet(${exIdx})" class="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
                             ＋ Aggiungi Set
                         </button><button onclick="openConfirmModal('Elimina esercizio', 'Vuoi eliminare questo esercizio dalla sessione?', () => removeWorkoutExercise(${exIdx}))" class="px-3.5 flex items-center justify-center bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition active:scale-98" title="Elimina esercizio"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></div>
+                        </div>
                     </div>
                 `;
             });
@@ -1397,14 +1903,15 @@
             });
         }
 
-        function updateWorkoutSet(exIdx, setIdx, field, val) {
+        // Salva a ogni cifra digitata, così un valore non si perde se l'app si chiude.
+        function draftWorkoutSet(exIdx, setIdx, field, val) {
             if (!activeWorkout) return;
             const setObj = activeWorkout.exercises[exIdx].sets[setIdx];
             setObj[field] = parseFloat(val) || 0;
             setObj.completed = true;
             const stEl = document.getElementById(`set-status-${exIdx}-${setIdx}`);
             if (stEl) stEl.textContent = '✓';
-            if (field === 'reps') startRestTimer(activeWorkout.exercises[exIdx].targetRestSec || 90);
+            saveDraft();
         }
 
         function toggleSetComplete(exIdx, setIdx) {
@@ -1428,15 +1935,18 @@
                 });
             });
 
+            // Una sessione ripresa dopo una chiusura resta sul giorno in cui è iniziata.
+            const startedOn = new Date(activeWorkout.startedAt);
             ensureCalendar();
-            appData.calendar.trainingDays[dateKey(new Date())] = (appData.routines.findIndex(r => r.id === activeWorkout.routineId) + 1) || true;
+            appData.calendar.trainingDays[dateKey(startedOn)] = (appData.routines.findIndex(r => r.id === activeWorkout.routineId) + 1) || true;
             appData.history.unshift({
                 id: 'hist-' + Date.now(),
                 routineName: activeWorkout.routineName,
-                date: new Date().toISOString(),
-                durationSec: activeWorkout.elapsedSec || 0,
+                date: startedOn.toISOString(),
+                durationSec: Math.floor((Date.now() - activeWorkout.startTime) / 1000),
                 totalVolume: totalVolume,
                 exercises: activeWorkout.exercises.map(e => ({
+                    exId: e.exId,
                     name: e.name,
                     sets: e.sets.map(s => ({ weight: s.weight, reps: s.reps, completed: s.completed }))
                 }))
@@ -1449,32 +1959,13 @@
         }
 
         function cancelActiveWorkout() {
-            if (workoutTimerInterval) clearInterval(workoutTimerInterval);
-            workoutTimerInterval = null;
             activeWorkout = null;
-            document.getElementById('header-active-workout-pill').classList.add('hidden');
+            saveDraft();
+            updateWorkoutClock();
             stopRestTimer();
             closeModal('modal-confirm');
             if (activeTab === 'schede') renderSchedeTab();
             else if (activeTab === 'home') renderHomeTab();
-        }
-
-        function startWorkoutTimer() {
-            if (workoutTimerInterval) clearInterval(workoutTimerInterval);
-
-            const headerPill = document.getElementById('header-active-workout-pill');
-            if (headerPill) {
-                headerPill.classList.remove('hidden');
-            }
-
-            workoutTimerInterval = setInterval(() => {
-                if (!activeWorkout) return;
-                activeWorkout.elapsedSec = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
-                const timerEl = document.getElementById('header-workout-timer');
-                if (timerEl) timerEl.innerText = formatTimeHMS(activeWorkout.elapsedSec);
-                const liveTimerEl = document.getElementById('live-workout-timer-display');
-                if (liveTimerEl) liveTimerEl.innerText = formatTimeHMS(activeWorkout.elapsedSec);
-            }, 1000);
         }
 
         function startRestTimer(seconds) {
@@ -1484,9 +1975,6 @@
             restTimeRemaining = seconds;
             isRestPaused = false;
 
-            if (activeTab === 'schede') {
-                document.getElementById('rest-timer-banner').classList.remove('hidden');
-            }
             updateRestTimerUI();
 
             restTimerInterval = setInterval(() => {
@@ -1502,9 +1990,22 @@
                     }
                 }
             }, 1000);
+            updateRestPill();
+        }
+
+        // Il recupero si vede nell'header, solo in Schede. Il logo cede spazio mentre è attivo.
+        function updateRestPill() {
+            const visible = restTimerInterval !== null && activeTab === 'schede';
+            document.getElementById('header-rest-pill').classList.toggle('hidden', !visible);
+            document.getElementById('header-badge').classList.toggle('hidden', visible);
+        }
+
+        function toggleRestControls() {
+            document.getElementById('rest-timer-banner').classList.toggle('hidden');
         }
 
         function updateRestTimerUI() {
+            document.getElementById('header-rest-time').textContent = formatTimeMS(restTimeRemaining);
             const display = document.getElementById('rest-timer-display');
             const progress = document.getElementById('rest-timer-progress');
             if (display) display.innerText = formatTimeMS(restTimeRemaining);
@@ -1528,6 +2029,7 @@
             if (restTimerInterval) clearInterval(restTimerInterval);
             restTimerInterval = null;
             document.getElementById('rest-timer-banner').classList.add('hidden');
+            updateRestPill();
         }
 
         let audioCtx = null;
@@ -1585,46 +2087,50 @@
             document.getElementById(`subtab-btn-${sub}`).className = "flex-1 py-1.5 rounded-none transition text-emerald-600 dark:text-emerald-400 bg-slate-200 dark:bg-slate-800 font-bold";
 
             if (sub === 'history') renderTestHistory();
+            if (sub === 'benchmarks') renderMaximals();
         }
 
-        function renderTestTab() {}
+        function renderTestTab() {
+            const select = document.getElementById('calc-lift');
+            const previous = select.value;
+            select.innerHTML = LIFTS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+            if (previous) select.value = previous;
+            renderMaximals();
+            renderTestHistory();
+        }
+
+        let calculated1RM = null;
 
         function compute1RM() {
-            const weight = parseFloat(document.getElementById('calc-weight').value) || 0;
+            const liftId = document.getElementById('calc-lift').value;
+            const weight = parseFloat(document.getElementById('calc-weight').value);
             const reps = parseInt(document.getElementById('calc-reps').value) || 0;
-            if (weight <= 0 || reps <= 0) return;
-
-            const calc1RM = Math.round(weight * (1 + reps / 30));
-            document.getElementById('res-1rm-val').innerText = `${calc1RM} kg`;
-            document.getElementById('pct-95').innerText = `${Math.round(calc1RM * 0.95)} kg`;
-            document.getElementById('pct-90').innerText = `${Math.round(calc1RM * 0.90)} kg`;
-            document.getElementById('pct-85').innerText = `${Math.round(calc1RM * 0.85)} kg`;
-            document.getElementById('pct-80').innerText = `${Math.round(calc1RM * 0.80)} kg`;
+            if (isNaN(weight) || reps <= 0) {
+                showToast('Inserisci carico e ripetizioni', 'warning');
+                return;
+            }
+            // Una sola ripetizione è già il massimale. Con la zavorra conta anche metà del peso corporeo.
+            const offset = bodyOffset(liftId);
+            calculated1RM = reps === 1 ? weight : roundHalf((weight + offset) * (1 + reps / 30) - offset);
+            document.getElementById('res-1rm-val').innerText = kgLabel(calculated1RM);
+            document.getElementById('pct-table').innerHTML = [50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map(p => `
+                <div class="bg-slate-200 dark:bg-slate-850 p-2 rounded-none border border-slate-300 dark:border-slate-800">
+                    <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">${p}%</div>
+                    <div class="font-bold text-slate-900 dark:text-slate-100 mt-0.5 font-mono text-[11px]">${kgLabel(liftLoad(liftId, calculated1RM, p))}</div>
+                </div>`).join('');
             document.getElementById('1rm-result-card').classList.remove('hidden');
         }
 
         function saveCurrent1RM() {
-            const exName = document.getElementById('calc-exercise-name').value.trim() || '1RM';
-            const weight = parseFloat(document.getElementById('calc-weight').value) || 0;
-            const valText = document.getElementById('res-1rm-val').innerText;
-
-            appData.tests.unshift({
-                id: 'test-' + Date.now(),
-                type: '1RM',
-                exercise: exName,
-                weight: weight,
-                calculated1RM: parseInt(valText) || weight,
-                date: new Date().toISOString().split('T')[0]
-            });
-            saveAppData();
-            showToast("Massimale salvato!", "success");
+            if (calculated1RM === null) return;
+            setLiftMax(document.getElementById('calc-lift').value, String(calculated1RM));
         }
 
         function renderTestHistory() {
             const container = document.getElementById('tests-history-list');
             if (!container) return;
 
-            let html = '';
+            let html = appData.tests.length ? '' : `<p class="text-xs text-slate-500 dark:text-slate-400">Nessun massimale salvato: inseriscilo in Massimali o usa il calcolatore.</p>`;
             appData.tests.forEach(t => {
                 html += `
                     <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3 flex items-center justify-between">
@@ -1634,7 +2140,7 @@
                         </div>
                         <div class="text-right">
                             <div class="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">${t.calculated1RM} kg</div>
-                            <div class="text-[10px] text-slate-500">${t.date}</div>
+                            <div class="text-[10px] text-slate-500">${esc(t.date)}</div>
                         </div>
                     </div>
                 `;
@@ -1662,7 +2168,7 @@
             const names = new Set();
             appData.routines.forEach(r => r.exercises.forEach(e => names.add(e.name)));
             select.innerHTML = `<option value="${TOTAL_KEY}">Peso totale (kg per sessione)</option>` +
-                Array.from(names).map(n => `<option value="${n.replace(/"/g, '&quot;')}">${n}</option>`).join('');
+                Array.from(names).map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
             if (previous && Array.from(select.options).some(o => o.value === previous)) select.value = previous;
             renderExerciseChart();
             renderWorkoutHistoryList();
@@ -1674,6 +2180,7 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#94a3b8' : '#475569';
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+            const accent = getComputedStyle(document.documentElement).getPropertyValue('--e-500').trim().split(/\s+/).join(',');
             const sel = document.getElementById('stats-exercise-select');
             const isTotal = !sel || sel.value === TOTAL_KEY;
 
@@ -1685,10 +2192,15 @@
                 label = 'Peso totale (kg)';
                 title = sessions.length ? { display: false } : { display: true, text: 'Nessuna sessione salvata', color: textColor, font: { size: 11 } };
             } else {
-                labels = ['04/09', 'Sett 2', 'Sett 3', 'Sett 4'];
-                data = [50, 52.5, 55, 57.5];
-                label = 'Carico (kg)';
-                title = { display: false };
+                const sessions = appData.history.slice().reverse().map(h => {
+                    const done = (h.exercises || []).find(e => e.name === sel.value);
+                    const weights = done ? (done.sets || []).filter(s => s.completed).map(s => s.weight) : [];
+                    return weights.length ? { date: h.date, top: Math.max(...weights) } : null;
+                }).filter(Boolean);
+                labels = sessions.map(s => new Date(s.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }));
+                data = sessions.map(s => s.top);
+                label = 'Carico massimo (kg)';
+                title = sessions.length ? { display: false } : { display: true, text: 'Nessuna sessione con questo esercizio', color: textColor, font: { size: 11 } };
             }
 
             activeExerciseChart = new Chart(ctx, {
@@ -1698,8 +2210,8 @@
                     datasets: [{
                         label: label,
                         data: data,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        borderColor: `rgb(${accent})`,
+                        backgroundColor: `rgba(${accent},0.15)`,
                         fill: true,
                         tension: 0
                     }]
@@ -1728,13 +2240,13 @@
             appData.history.forEach(h => {
                 const dateStr = new Date(h.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
                 html += `
-                    <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between">
+                    <button onclick="openDayModal('${dateKey(new Date(h.date))}')" class="w-full text-left bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-3.5 flex items-center justify-between gap-2">
                         <div>
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">${h.routineName}</h4>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">${esc(h.routineName)}</h4>
                             <div class="text-[10px] text-slate-500 dark:text-slate-400">${dateStr} • ⏱ ${durationLabel(h.durationSec)}</div>
                         </div>
-                        <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20">${roundKg(h.totalVolume)} kg totali</span>
-                    </div>
+                        <span class="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/20 shrink-0">${roundKg(h.totalVolume)} kg totali</span>
+                    </button>
                 `;
             });
             container.innerHTML = html;
@@ -1742,6 +2254,7 @@
 
         function renderImpostazioniTab() {
             document.getElementById('setting-sound-toggle').checked = appData.settings.soundEnabled;
+            renderStylePicker();
         }
 
         function exportDataJSON() {
@@ -1761,8 +2274,10 @@
             reader.onload = function(e) {
                 try {
                     appData = JSON.parse(e.target.result);
+                    migrateData();
                     saveAppData();
                     applyTheme(appData.settings.theme || 'dark');
+                    applyStyle(appData.settings.style);
                     showToast("Dati importati!", "success");
                     switchTab('home');
                 } catch (err) {}
@@ -1772,8 +2287,10 @@
 
         function executeResetData() {
             appData = JSON.parse(JSON.stringify(DEFAULT_APP_DATA));
+            migrateData();
             saveAppData();
             applyTheme('dark');
+            applyStyle(appData.settings.style);
             closeModal('modal-confirm');
             switchTab('home');
             showToast("Programma ripristinato!", "info");
@@ -1799,12 +2316,6 @@
             setTimeout(() => toast.remove(), 2500);
         }
 
-        function formatTimeHMS(sec) {
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-        }
-
         function formatTimeMS(sec) {
             const m = Math.floor(sec / 60);
             const s = sec % 60;
@@ -1813,7 +2324,13 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAppData();
-            switchTab('home');
+            setInterval(updateWorkoutClock, 1000);
+            if (restoreDraft()) {
+                switchTab('schede');
+                showToast('Sessione ripristinata: nessun dato perso', 'success');
+            } else {
+                switchTab('home');
+            }
         });
     </script>
     <script>
