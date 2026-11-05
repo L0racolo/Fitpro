@@ -9,11 +9,15 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <title>FitPro Mobile - Programma Andrea Mammana</title>
+    <title>FitPro Mobile - Programma Andrea</title>
     <script>
         // Applica lo stile salvato prima di disegnare la pagina, per evitare un lampo di colori.
         document.documentElement.dataset.style = 'fitness';
-        try { document.documentElement.dataset.style = JSON.parse(localStorage.getItem('fitpro_mammana_v9_5tabs')).settings.style || 'fitness'; } catch (e) {}
+        try {
+            const saved = JSON.parse(localStorage.getItem('fitpro_mammana_v9_5tabs')).settings;
+            document.documentElement.dataset.style = saved.style || 'fitness';
+            if (saved.accent) document.documentElement.dataset.accent = saved.accent;
+        } catch (e) {}
     </script>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script>
@@ -67,6 +71,17 @@
         html[data-style="fitness"] :is(h3, h4) { font-size: 1rem; line-height: 1.25; letter-spacing: -0.01em; font-weight: 700; }
         html[data-style="fitness"] .session-title { font-size: 1.25rem; font-weight: 800; }
 
+        /* Colore d'accento: dopo gli stili, così li sovrascrive. Lime/Verde non ha regole: usa i colori dello stile. */
+        html[data-accent="arancione"] {
+            --e-400: 255 165 60; --e-500: 255 149 0; --e-600: 175 80 0;
+            /* L'ambra delle settimane di scarico diventa gialla, per distinguersi dall'arancione. */
+            --a-300: 255 224 102; --a-400: 255 214 10; --a-500: 255 204 0; --a-600: 150 110 0;
+        }
+        html[data-accent="viola"] { --e-400: 196 160 255; --e-500: 179 136 255; --e-600: 109 62 217; }
+        html[data-accent="azzurro"] { --e-400: 90 200 250; --e-500: 90 200 250; --e-600: 0 110 190; }
+        html[data-accent="rosso"] { --e-400: 255 120 110; --e-500: 255 95 85; --e-600: 200 30 30; }
+        html[data-accent="rosa"] { --e-400: 255 140 190; --e-500: 255 120 180; --e-600: 200 30 110; }
+
         .drag-handle { touch-action: none; cursor: grab; }
         .reordering .drag-hide { display: none; }
         .reordering { user-select: none; }
@@ -95,11 +110,9 @@
 
         <header class="sticky top-0 z-40 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-300 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-none bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-lg shadow-md">
-                    <i class="fa-solid fa-bolt">⚡</i>
-                </div>
+                <img src="icon-192.png" alt="" class="w-9 h-9 rounded-none object-cover shrink-0">
                 <div>
-                    <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">FitPro <span id="header-badge" class="text-emerald-600 dark:text-emerald-400 text-[10px] px-1.5 py-0.5 rounded-none bg-emerald-500/10 border border-emerald-500/30">MAMMANA</span></h1>
+                    <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">FitPro</h1>
                     <p id="header-subtitle" class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Calisthenics & Powerlifting</p>
                 </div>
             </div>
@@ -109,7 +122,7 @@
                     <span aria-hidden="true">⏱</span><span id="header-rest-time">00:00</span>
                 </button>
 
-                <button id="header-workout-pill" onclick="switchTab('schede')" aria-label="Timer complessivo allenamento" class="hidden h-9 px-2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-sm font-bold font-mono flex items-center">
+                <button id="header-workout-pill" onclick="openFinishModal()" aria-label="Timer complessivo allenamento: tocca per concludere" class="hidden h-9 px-2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-sm font-bold font-mono flex items-center">
                     <span class="workout-clock">00:00</span>
                 </button>
 
@@ -130,11 +143,11 @@
                         <i class="fa-solid fa-stopwatch">⏱</i>
                     </div>
                     <div>
-                        <div class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400">Timer Recupero Attivo</div>
+                        <div id="rest-timer-label" class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 dark:text-slate-400">Timer Recupero</div>
                         <div id="rest-timer-display" class="text-xl font-black font-mono text-cyan-600 dark:text-cyan-400 leading-none">00:00</div>
                     </div>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div id="rest-running-controls" class="flex items-center gap-1.5">
                     <button onclick="adjustRestTimer(30)" class="px-2.5 py-1 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-xs font-bold rounded-none text-slate-900 dark:text-slate-200 hover:bg-slate-400 dark:hover:bg-slate-700">+30s</button>
                     <button onclick="togglePauseRestTimer()" id="btn-pause-rest" class="p-1.5 bg-slate-300 dark:bg-slate-800 border border-slate-400 dark:border-slate-700 text-xs rounded-none text-slate-900 dark:text-slate-200 hover:bg-slate-400 dark:hover:bg-slate-700 w-8 h-8 flex items-center justify-center">
                         <i class="fa-solid fa-pause">⏸</i>
@@ -157,7 +170,7 @@
                 </div>
             </div>
 
-            <div class="w-full bg-slate-300 dark:bg-slate-800 h-1 rounded-none mt-2 overflow-hidden">
+            <div id="rest-timer-bar" class="w-full bg-slate-300 dark:bg-slate-800 h-1 rounded-none mt-2 overflow-hidden">
                 <div id="rest-timer-progress" class="bg-cyan-500 dark:bg-cyan-400 h-full w-full transition-all duration-300"></div>
             </div>
         </div>
@@ -262,6 +275,8 @@
                         Stile dell'app
                     </h3>
                     <div id="style-picker" class="space-y-2"></div>
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider pt-1">Colore</h3>
+                    <div id="accent-picker" class="grid grid-cols-3 gap-2"></div>
                 </div>
 
                 <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-none p-4 space-y-3 shadow-md">
@@ -293,8 +308,8 @@
                     <h3 class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider border-b border-slate-300 dark:border-slate-800 pb-2">
                         Reset Programma PDF
                     </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Ripristina la scheda originale dal documento Andrea Mammana.</p>
-                    <button onclick="openConfirmModal('Reset Dati', 'Vuoi ripristinare il programma originale Andrea Mammana?', executeResetData)" class="w-full py-2 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Ripristina la scheda originale di Andrea.</p>
+                    <button onclick="openConfirmModal('Reset Dati', 'Vuoi ripristinare il programma originale di Andrea?', executeResetData)" class="w-full py-2 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-xs rounded-none hover:bg-rose-500/20 transition">
                         Ripristina Programma Originale
                     </button>
                 </div>
@@ -346,8 +361,8 @@
                         <input type="number" id="new-ex-weight" value="0" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Recupero (s)</label>
-                        <input type="number" id="new-ex-rest" value="90" step="15" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500">
+                        <label for="new-ex-unit" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Si misura in</label>
+                        <select id="new-ex-unit" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"><option value="reps">Ripetizioni</option><option value="sec">Secondi</option></select>
                     </div>
                 </div>
             </div>
@@ -370,6 +385,16 @@
         </div>
     </div>
 
+    <div id="modal-finish" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-xs rounded-none p-4 text-center space-y-3 shadow-2xl">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Concludi e salva l'allenamento?</h3>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('modal-finish')" class="flex-1 py-2 bg-slate-300 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-bold text-xs rounded-none">Annulla</button>
+                <button onclick="closeModal('modal-finish'); finishActiveWorkout()" class="flex-1 py-2 bg-emerald-500 text-slate-950 font-black text-xs rounded-none">CONCLUDI E SALVA</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-routine-ex" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-xs max-h-[90vh] overflow-y-auto rounded-none p-4 space-y-3 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-300 dark:border-slate-800 pb-2">
@@ -383,21 +408,17 @@
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Serie</label><input type="number" id="re-sets" min="1" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Rep min</label><input type="number" id="re-repmin" min="1" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Rep max</label><input type="number" id="re-repmax" min="1" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Min</label><input type="number" id="re-repmin" min="1" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Max</label><input type="number" id="re-repmax" min="1" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Recupero (s)</label><input type="number" id="re-rest" step="15" min="0" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
                     <div><label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Carico iniziale (kg)</label><input type="number" id="re-weight" step="0.5" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></div>
+                    <div><label for="re-unit" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Si misura in</label><select id="re-unit" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"><option value="reps">Ripetizioni</option><option value="sec">Secondi</option></select></div>
                 </div>
                 <div>
                     <label for="re-lift" class="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1 uppercase">Massimale collegato</label>
                     <select id="re-lift" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-3 py-2 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:border-emerald-500"></select>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Il carico si calcola se la progressione indica una percentuale, per esempio @55%.</p>
-                </div>
-                <div>
-                    <div class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase">Progressione 6 settimane</div>
-                    <div id="re-progression" class="grid grid-cols-3 gap-1.5"></div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Il carico si calcola dal massimale solo per gli esercizi del programma che hanno una percentuale.</p>
                 </div>
             </div>
             <div class="flex gap-2 pt-2">
@@ -450,7 +471,7 @@
         const STORAGE_KEY = 'fitpro_mammana_v9_5tabs';
 
         const DEFAULT_APP_DATA = {
-            athlete: "Andrea Mammana",
+            athlete: "Andrea",
             datePDF: "04/09/2023",
             bodyWeight: 69.0,
             currentWeek: 1,
@@ -462,13 +483,13 @@
                     category: 'Spinta & Catena Posteriore',
                     notes: 'Focus tenute isometriche e % 1RM',
                     exercises: [
-                        { id: 'ex-101', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, restSec: 90, startWeight: 0 },
-                        { id: 'ex-102', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, restSec: 90, startWeight: 0 },
-                        { id: 'ex-103', name: 'Dips Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: 5.3 },
-                        { id: 'ex-104', name: 'Push Up Diamond', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 },
-                        { id: 'ex-105', name: 'Stacco da Terra (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 150, startWeight: 71.5 },
-                        { id: 'ex-106', name: 'Squat Bilanciere (@55% 1RM)', sets: 3, repMin: 10, repMax: 10, restSec: 120, startWeight: 57.8 },
-                        { id: 'ex-107', name: 'Calf', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 }
+                        { id: 'ex-101', unit: 'sec', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, startWeight: 0 },
+                        { id: 'ex-102', unit: 'sec', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, startWeight: 0 },
+                        { id: 'ex-103', name: 'Dips Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, startWeight: 5.3 },
+                        { id: 'ex-104', name: 'Push Up Diamond', sets: 3, repMin: 10, repMax: 15, startWeight: 0 },
+                        { id: 'ex-105', name: 'Stacco da Terra (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, startWeight: 71.5 },
+                        { id: 'ex-106', name: 'Squat Bilanciere (@55% 1RM)', sets: 3, repMin: 10, repMax: 10, startWeight: 57.8 },
+                        { id: 'ex-107', name: 'Calf', sets: 3, repMin: 10, repMax: 15, startWeight: 0 }
                     ]
                 },
                 {
@@ -477,11 +498,11 @@
                     category: 'Trazione & Spalle',
                     notes: 'Focus blocco scapolare e tenute',
                     exercises: [
-                        { id: 'ex-201', name: 'Pull Up al Petto', sets: 4, repMin: 3, repMax: 4, restSec: 90, startWeight: 0 },
-                        { id: 'ex-202', name: 'Chin Up (3" Blocco Scapolare)', sets: 4, repMin: 3, repMax: 5, restSec: 90, startWeight: 0 },
-                        { id: 'ex-203', name: 'HS Push Up Wall', sets: 4, repMin: 4, repMax: 5, restSec: 120, startWeight: 0 },
-                        { id: 'ex-204', name: 'Military Press', sets: 4, repMin: 6, repMax: 10, restSec: 90, startWeight: 35 },
-                        { id: 'ex-205', name: 'PL Lean + Barchetta + L-Sit', sets: 4, repMin: 15, repMax: 25, restSec: 60, startWeight: 0 }
+                        { id: 'ex-201', name: 'Pull Up al Petto', sets: 4, repMin: 3, repMax: 4, startWeight: 0 },
+                        { id: 'ex-202', name: 'Chin Up (3" Blocco Scapolare)', sets: 4, repMin: 3, repMax: 5, startWeight: 0 },
+                        { id: 'ex-203', name: 'HS Push Up Wall', sets: 4, repMin: 4, repMax: 5, startWeight: 0 },
+                        { id: 'ex-204', name: 'Military Press', sets: 4, repMin: 6, repMax: 10, startWeight: 35 },
+                        { id: 'ex-205', unit: 'sec', name: 'PL Lean + Barchetta + L-Sit', sets: 4, repMin: 15, repMax: 25, startWeight: 0 }
                     ]
                 },
                 {
@@ -490,13 +511,13 @@
                     category: 'Skill & Gambe',
                     notes: 'Fermo in buca nello Squat e Planche Lean Push Up',
                     exercises: [
-                        { id: 'ex-301', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, restSec: 90, startWeight: 0 },
-                        { id: 'ex-302', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, restSec: 90, startWeight: 0 },
-                        { id: 'ex-303', name: 'Planche Lean Push Up (3-5" giù)', sets: 5, repMin: 3, repMax: 6, restSec: 90, startWeight: 0 },
-                        { id: 'ex-304', name: 'FL One Leg Pull Down', sets: 4, repMin: 3, repMax: 4, restSec: 90, startWeight: 0 },
-                        { id: 'ex-305', name: 'Squat Bilanciere (Buca @50% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: 52.5 },
-                        { id: 'ex-306', name: 'Stacco Rumeno', sets: 3, repMin: 8, repMax: 12, restSec: 90, startWeight: 55 },
-                        { id: 'ex-307', name: 'Calf', sets: 3, repMin: 10, repMax: 15, restSec: 60, startWeight: 0 }
+                        { id: 'ex-301', unit: 'sec', name: 'Planche Tuck (Iso)', sets: 6, repMin: 5, repMax: 8, startWeight: 0 },
+                        { id: 'ex-302', unit: 'sec', name: 'Front Lever Straddle (Iso)', sets: 5, repMin: 6, repMax: 8, startWeight: 0 },
+                        { id: 'ex-303', name: 'Planche Lean Push Up (3-5" giù)', sets: 5, repMin: 3, repMax: 6, startWeight: 0 },
+                        { id: 'ex-304', name: 'FL One Leg Pull Down', sets: 4, repMin: 3, repMax: 4, startWeight: 0 },
+                        { id: 'ex-305', name: 'Squat Bilanciere (Buca @50% 1RM)', sets: 5, repMin: 5, repMax: 5, startWeight: 52.5 },
+                        { id: 'ex-306', name: 'Stacco Rumeno', sets: 3, repMin: 8, repMax: 12, startWeight: 55 },
+                        { id: 'ex-307', name: 'Calf', sets: 3, repMin: 10, repMax: 15, startWeight: 0 }
                     ]
                 },
                 {
@@ -505,12 +526,12 @@
                     category: 'Full Body & Zavorre',
                     notes: 'Pull Up Zavorrati e Dips Anelli',
                     exercises: [
-                        { id: 'ex-401', name: 'Pull Up Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, restSec: 120, startWeight: -3.2 },
-                        { id: 'ex-402', name: 'Rematore Bilanciere', sets: 3, repMin: 8, repMax: 12, restSec: 90, startWeight: 50 },
-                        { id: 'ex-403', name: 'Dips Ring (con 5" fermo su)', sets: 4, repMin: 3, repMax: 5, restSec: 120, startWeight: 0 },
-                        { id: 'ex-404', name: 'Panca Piana (10/8/8/6)', sets: 4, repMin: 6, repMax: 10, restSec: 120, startWeight: 60 },
-                        { id: 'ex-405', name: 'Squat Bulgaro', sets: 4, repMin: 8, repMax: 10, restSec: 75, startWeight: 16 },
-                        { id: 'ex-406', name: 'Leg Extension + Leg Curl', sets: 3, repMin: 8, repMax: 12, restSec: 60, startWeight: 40 }
+                        { id: 'ex-401', name: 'Pull Up Zavorrati (@55% 1RM)', sets: 5, repMin: 5, repMax: 5, startWeight: -3.2 },
+                        { id: 'ex-402', name: 'Rematore Bilanciere', sets: 3, repMin: 8, repMax: 12, startWeight: 50 },
+                        { id: 'ex-403', name: 'Dips Ring (con 5" fermo su)', sets: 4, repMin: 3, repMax: 5, startWeight: 0 },
+                        { id: 'ex-404', name: 'Panca Piana (10/8/8/6)', sets: 4, repMin: 6, repMax: 10, startWeight: 60 },
+                        { id: 'ex-405', name: 'Squat Bulgaro', sets: 4, repMin: 8, repMax: 10, startWeight: 16 },
+                        { id: 'ex-406', name: 'Leg Extension + Leg Curl', sets: 3, repMin: 8, repMax: 12, startWeight: 40 }
                     ]
                 }
             ],
@@ -561,17 +582,6 @@
             'ex-406': _R8
         };
 
-        function progressionHTML(exId, wrap) {
-            const p = getProgression(exId).map((v, i) => [v, i]).filter(x => x[0]);
-            if (!p.length) return '';
-            const ex = findExercise(exId);
-            const week = programWeek();
-            return `<div class="${wrap ? 'flex flex-wrap gap-1' : 'flex gap-1 overflow-x-auto no-scrollbar'}">${p.map(([v, i]) => {
-                const load = exerciseLoad(ex, i + 1);
-                return `<div class="shrink-0 max-w-[104px] px-1.5 py-1 bg-slate-200 dark:bg-slate-850 border ${i === week - 1 && load !== null ? 'border-emerald-500' : 'border-slate-300 dark:border-slate-800'} text-center"><div class="text-[8px] font-black uppercase text-slate-500 dark:text-slate-400">Sett ${i + 1}</div><div class="text-[10px] font-bold font-mono text-slate-900 dark:text-slate-100 leading-tight">${esc(v)}</div>${load !== null ? `<div class="text-[10px] font-bold font-mono text-emerald-600 dark:text-emerald-400 leading-tight">${kgLabel(load)}</div>` : ''}</div>`;
-            }).join('')}</div>`;
-        }
-
         function getProgression(exId) {
             const custom = appData.progressions && appData.progressions[exId];
             return custom || PROGRESSIONS[exId] || [];
@@ -612,6 +622,7 @@
                 if (!draft || !Array.isArray(draft.exercises)) return false;
                 // Il tempo in cui l'app è rimasta chiusa non conta nella durata della sessione.
                 draft.startTime += Date.now() - (draft.savedAt || Date.now());
+                draft.exercises.forEach(ex => ex.sets.forEach(st => { if (!st.completed) st.reps = null; }));
                 activeWorkout = draft;
                 return true;
             } catch (e) {
@@ -639,6 +650,7 @@
             migrateData();
             applyTheme(appData.settings.theme || 'dark');
             applyStyle(appData.settings.style);
+            applyAccent(appData.settings.accent);
         }
 
         /* ===== Massimali attuali: guidano i carichi degli allenamenti ===== */
@@ -652,21 +664,38 @@
         const LIFT_BY_EXERCISE = { 'ex-103': 'dips', 'ex-105': 'stacco', 'ex-106': 'squat', 'ex-305': 'squat', 'ex-401': 'pullup' };
         const SEEDED_2023_WEIGHTS = { 'ex-103': 5.3, 'ex-105': 71.5, 'ex-106': 57.8, 'ex-305': 52.5, 'ex-401': -3.2 };
         const SEEDED_2023_TESTS = ['test-1', 'test-2', 'test-3', 'test-4'];
+        const SECONDS_EXERCISES = ['ex-101', 'ex-102', 'ex-205', 'ex-301', 'ex-302'];
 
         // Toglie una sola volta i valori del 2023. Le modifiche fatte a mano restano.
         function migrateData() {
             if (!appData.maxes) appData.maxes = {};
-            if (appData.removed2023) return;
-            appData.tests = (appData.tests || []).filter(t => !SEEDED_2023_TESTS.includes(t.id));
-            delete appData.datePDF;
-            appData.routines.forEach(r => r.exercises.forEach(ex => {
-                if (!LIFT_BY_EXERCISE[ex.id]) return;
-                ex.lift = LIFT_BY_EXERCISE[ex.id];
-                if (ex.startWeight === SEEDED_2023_WEIGHTS[ex.id]) ex.startWeight = 0;
-                ex.name = ex.name.replace(/\s*\(@\d+% 1RM\)/, '').replace(/\(Buca @\d+% 1RM\)/, '(Buca)');
-            }));
-            appData.removed2023 = true;
-            saveAppData();
+            let changed = false;
+            if (!appData.removed2023) {
+                appData.tests = (appData.tests || []).filter(t => !SEEDED_2023_TESTS.includes(t.id));
+                delete appData.datePDF;
+                appData.routines.forEach(r => r.exercises.forEach(ex => {
+                    if (!LIFT_BY_EXERCISE[ex.id]) return;
+                    ex.lift = LIFT_BY_EXERCISE[ex.id];
+                    if (ex.startWeight === SEEDED_2023_WEIGHTS[ex.id]) ex.startWeight = 0;
+                    ex.name = ex.name.replace(/\s*\(@\d+% 1RM\)/, '').replace(/\(Buca @\d+% 1RM\)/, '(Buca)');
+                }));
+                appData.removed2023 = true;
+                changed = true;
+            }
+            if (!appData.surnameRemoved) {
+                if (appData.athlete === 'Andrea Mammana') appData.athlete = 'Andrea';
+                appData.surnameRemoved = true;
+                changed = true;
+            }
+            // Una sola volta: se poi rimetti un esercizio in ripetizioni, resta in ripetizioni.
+            if (!appData.secondsSet) {
+                appData.routines.forEach(r => r.exercises.forEach(ex => {
+                    if (SECONDS_EXERCISES.includes(ex.id)) ex.unit = 'sec';
+                }));
+                appData.secondsSet = true;
+                changed = true;
+            }
+            if (changed) saveAppData();
         }
 
         function roundHalf(v) {
@@ -702,6 +731,23 @@
                 if (ex) return ex;
             }
             return null;
+        }
+
+        // Unità di un esercizio in sessione o nello storico; i dati più vecchi la prendono dalla scheda.
+        function sessionUnit(ex) {
+            const fromRoutine = ex.exId ? findExercise(ex.exId) : null;
+            return ex.unit || (fromRoutine && fromRoutine.unit) || 'reps';
+        }
+
+        function targetLabel(ex) {
+            return `${ex.sets} × ${ex.repMin}-${ex.repMax}${ex.unit === 'sec' ? '"' : ''}`;
+        }
+
+        function setLabel(s, unit) {
+            if (unit !== 'sec') return `${s.weight} kg × ${s.reps ?? 0}`;
+            if (s.sec === undefined) return s.weight ? `${s.weight} kg × ${s.reps}"` : `${s.reps}"`; // Sessioni salvate prima di REPS + SEC.
+            if (s.sec === null) return `${s.reps} reps`;
+            return s.reps != null ? `${s.reps} × ${s.sec}"` : `${s.sec}"`;
         }
 
         function exerciseLoad(ex, week) {
@@ -789,8 +835,8 @@
         }
 
         const STYLES = [
-            { id: 'fitness', name: 'Fitness', desc: 'Ispirato a Fitness di iOS: nero, card arrotondate, lime', bg: '#000000', card: '#1c1c1e', a: '#a6f014', b: '#1ed7e1', font: '-apple-system, Inter' },
-            { id: 'classico', name: 'Classico', desc: "L'aspetto di prima: ardesia, verde e azzurro", bg: '#090d16', card: '#1a2234', a: '#10b981', b: '#06b6d4', font: "'Inter'" }
+            { id: 'fitness', name: 'Fitness', desc: 'Ispirato a Fitness di iOS: nero e card arrotondate', bg: '#000000', card: '#1c1c1e', a: '#a6f014', b: '#1ed7e1', font: '-apple-system, Inter' },
+            { id: 'classico', name: 'Classico', desc: "L'aspetto di prima: toni ardesia", bg: '#090d16', card: '#1a2234', a: '#10b981', b: '#06b6d4', font: "'Inter'" }
         ];
 
         function applyStyle(id) {
@@ -809,12 +855,13 @@
 
         function renderStylePicker() {
             const current = document.documentElement.dataset.style;
+            const accent = ACCENTS.find(a => a.id === document.documentElement.dataset.accent);
             document.getElementById('style-picker').innerHTML = STYLES.map(s => `
                 <button onclick="selectStyle('${s.id}')" aria-pressed="${s.id === current}" class="w-full flex items-center gap-3 p-2 text-left border ${s.id === current ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-850'}">
                     <span class="shrink-0 w-[72px] h-12 p-1.5 flex flex-col justify-between" style="background:${s.bg}; border:1px solid ${s.card};">
                         <span class="block h-2" style="width:70%; background:${s.card}"></span>
                         <span class="flex gap-1">
-                            <span class="block h-3 flex-1" style="background:${s.a}"></span>
+                            <span class="block h-3 flex-1" style="background:${(accent && accent.color) || s.a}"></span>
                             <span class="block h-3 w-3" style="background:${s.b}"></span>
                         </span>
                     </span>
@@ -823,6 +870,41 @@
                         <span class="block text-[10px] text-slate-500 dark:text-slate-400">${s.desc}</span>
                     </span>
                     <span class="w-5 shrink-0 text-center font-black text-emerald-600 dark:text-emerald-400">${s.id === current ? '✓' : ''}</span>
+                </button>`).join('');
+        }
+
+        const ACCENTS = [
+            { id: 'lime' },
+            { id: 'arancione', name: 'Arancione', color: 'rgb(255 149 0)' },
+            { id: 'viola', name: 'Viola', color: 'rgb(179 136 255)' },
+            { id: 'azzurro', name: 'Azzurro', color: 'rgb(90 200 250)' },
+            { id: 'rosso', name: 'Rosso', color: 'rgb(255 95 85)' },
+            { id: 'rosa', name: 'Rosa', color: 'rgb(255 120 180)' }
+        ];
+
+        function applyAccent(id) {
+            document.documentElement.dataset.accent = ACCENTS.some(a => a.id === id) ? id : 'lime';
+        }
+
+        function accentName(a) {
+            return a.name || (document.documentElement.dataset.style === 'classico' ? 'Verde' : 'Lime');
+        }
+
+        function selectAccent(id) {
+            appData.settings.accent = id;
+            saveAppData();
+            applyAccent(id);
+            renderImpostazioniTab();
+            showToast(`Colore ${accentName(ACCENTS.find(a => a.id === id))} attivato`, 'success');
+        }
+
+        function renderAccentPicker() {
+            const current = document.documentElement.dataset.accent;
+            const styleColor = STYLES.find(s => s.id === document.documentElement.dataset.style).a;
+            document.getElementById('accent-picker').innerHTML = ACCENTS.map(a => `
+                <button onclick="selectAccent('${a.id}')" aria-pressed="${a.id === current}" class="min-h-[44px] px-2 py-2 flex items-center gap-2 text-left border ${a.id === current ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-850'}">
+                    <span class="shrink-0 w-4 h-4" style="background:${a.color || styleColor}; border-radius:50%"></span>
+                    <span class="text-xs font-bold text-slate-900 dark:text-white min-w-0">${accentName(a)}</span>
                 </button>`).join('');
         }
 
@@ -898,30 +980,6 @@
             const visible = !!activeWorkout || activeTab === 'schede';
             document.getElementById('header-workout-pill').classList.toggle('hidden', !visible);
             document.getElementById('header-subtitle').classList.toggle('hidden', visible);
-        }
-
-        function renderExerciseRestPresetsHTML(exIdx, currentRestSec) {
-            const btn = (s, l) => `<button onclick="setExerciseRestPreset(${exIdx}, ${s})" class="flex-1 py-1 px-1 bg-slate-300 dark:bg-slate-800 hover:bg-cyan-500/20 text-[10px] font-black rounded-none text-slate-800 dark:text-slate-200 border border-slate-400/40 dark:border-slate-700 transition">${l}</button>`;
-            return `
-                <div class="bg-slate-200/80 dark:bg-slate-950/60 p-2 border border-slate-300 dark:border-slate-800 text-xs rounded-none">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <span class="text-[9px] font-black uppercase text-slate-600 dark:text-slate-400 flex items-center gap-1">Preset Recupero:</span>
-                        <span class="text-[9px] font-extrabold font-mono text-cyan-600 dark:text-cyan-400">${currentRestSec || 90}s target</span>
-                    </div>
-                    <div class="flex items-center justify-between gap-1 overflow-x-auto no-scrollbar">
-                        ${btn(60,'1m')}${btn(90,'1.30m')}${btn(120,'2m')}${btn(150,'2.30m')}${btn(180,'3m')}${btn(300,'5m')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function setExerciseRestPreset(exIdx, seconds) {
-            if (activeWorkout && activeWorkout.exercises[exIdx]) {
-                activeWorkout.exercises[exIdx].targetRestSec = seconds;
-            }
-            startRestTimer(seconds);
-            showToast(`Recupero impostato a ${seconds}s ed avviato!`, 'info');
-            if (activeTab === 'schede') renderSchedeTab();
         }
 
         function renderHomeTab() {
@@ -1012,7 +1070,7 @@
                         ${isOpen ? `
                             <div class="px-3 pb-3 space-y-2">
                                 <div data-reorder-list="${r.id}" class="space-y-1.5">
-                                    ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx, false)).join('')}
+                                    ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx)).join('')}
                                 </div>
                                 <button onclick="openRoutineExerciseModal('${r.id}', null)" class="w-full py-2 bg-slate-200 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none">＋ Aggiungi Esercizio</button>
                             </div>` : ''}
@@ -1116,7 +1174,7 @@
 
         function daySessionHTML(h) {
             const exercises = (h.exercises || [])
-                .map(ex => ({ name: ex.name, sets: (ex.sets || []).filter(s => s.completed) }))
+                .map(ex => ({ name: ex.name, unit: sessionUnit(ex), sets: (ex.sets || []).filter(s => s.completed) }))
                 .filter(ex => ex.sets.length);
             return `
                 <div class="bg-slate-200 dark:bg-slate-850 border border-slate-300 dark:border-slate-800 p-3 space-y-2.5">
@@ -1128,7 +1186,7 @@
                         <div class="border-t border-slate-300 dark:border-slate-800 pt-2">
                             <div class="text-xs font-bold text-slate-900 dark:text-slate-200 mb-1">${esc(ex.name)}</div>
                             <div class="flex flex-wrap gap-1">
-                                ${ex.sets.map((s, i) => `<span class="text-[11px] font-mono font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"><span class="text-slate-500 dark:text-slate-400">${i + 1}.</span> ${s.weight} kg × ${s.reps}</span>`).join('')}
+                                ${ex.sets.map((s, i) => `<span class="text-[11px] font-mono font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"><span class="text-slate-500 dark:text-slate-400">${i + 1}.</span> ${setLabel(s, ex.unit)}</span>`).join('')}
                             </div>
                         </div>`).join('') : `<p class="text-xs text-slate-500 dark:text-slate-400">Nessun set registrato in questa sessione.</p>`}
                 </div>`;
@@ -1320,7 +1378,7 @@
                             ${r.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 italic">${esc(r.notes)}</p>` : ''}
 
                             <div data-reorder-list="${r.id}" class="space-y-2 border-t border-slate-300 dark:border-slate-800 pt-3">
-                                ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx, true)).join('')}
+                                ${r.exercises.map((ex, exIdx) => routineRowHTML(r, ex, exIdx)).join('')}
                             </div>
 
                             <button onclick="openRoutineExerciseModal('${r.id}', null)" class="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
@@ -1345,19 +1403,18 @@
         const PENCIL_ICON = `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.3V21h3.7L18.1 9.6l-3.7-3.7L3 17.3zM20.7 7c.4-.4.4-1 0-1.4l-2.3-2.3c-.4-.4-1-.4-1.4 0l-1.8 1.8 3.7 3.7L20.7 7z"/></svg>`;
         const DRAG_HANDLE = `<span class="drag-handle w-8 h-9 -my-1 -ml-1 shrink-0 flex items-center justify-center text-slate-500 dark:text-slate-400" role="img" aria-label="Trascina per spostare"><svg class="w-4 h-5" viewBox="0 0 16 20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="4" r="1.8"/><circle cx="11" cy="4" r="1.8"/><circle cx="5" cy="10" r="1.8"/><circle cx="11" cy="10" r="1.8"/><circle cx="5" cy="16" r="1.8"/><circle cx="11" cy="16" r="1.8"/></svg></span>`;
 
-        function routineRowHTML(r, ex, exIdx, withProgression) {
+        function routineRowHTML(r, ex, exIdx) {
             return `
                 <div data-drag-item class="relative overflow-hidden border border-slate-300 dark:border-slate-800">
                     <button onclick="openRoutineExerciseModal('${r.id}', ${exIdx})" class="rt-edit invisible absolute left-0 top-0 bottom-0 w-[84px] bg-cyan-600 text-white font-black text-[11px] uppercase flex items-center justify-center">MODIFICA</button>
                     <button onclick="confirmDeleteRoutineExercise('${r.id}', ${exIdx})" class="rt-del invisible absolute right-0 top-0 bottom-0 w-[84px] bg-rose-600 text-white font-black text-[11px] uppercase flex items-center justify-center">ELIMINA</button>
-                    <div data-rid="${r.id}" data-idx="${exIdx}" class="rt-content swipe-content relative z-10 bg-slate-200 dark:bg-slate-850 p-2.5 flex ${withProgression ? 'items-start' : 'items-center'} gap-1.5 cursor-pointer">
+                    <div data-rid="${r.id}" data-idx="${exIdx}" class="rt-content swipe-content relative z-10 bg-slate-200 dark:bg-slate-850 p-2.5 flex items-center gap-1.5 cursor-pointer">
                         ${DRAG_HANDLE}
-                        <div class="flex-1 min-w-0 space-y-1.5">
+                        <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2 text-xs">
                                 <span class="text-slate-900 dark:text-slate-200 font-bold">${esc(ex.name)}</span>
-                                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px] shrink-0">${ex.sets} × ${ex.repMin}-${ex.repMax}</span>
+                                <span class="text-slate-500 dark:text-slate-400 font-mono text-[11px] shrink-0">${targetLabel(ex)}</span>
                             </div>
-                            ${withProgression ? `<div class="drag-hide">${progressionHTML(ex.id, true)}</div>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -1487,7 +1544,7 @@
             const r = appData.routines.find(x => x.id === routineId);
             if (!r) return;
             routineExCtx = { rid: routineId, idx: idx };
-            const ex = (idx === null) ? { name: '', sets: 3, repMin: 8, repMax: 10, restSec: 90, startWeight: 0 } : r.exercises[idx];
+            const ex = (idx === null) ? { name: '', sets: 3, repMin: 8, repMax: 10, startWeight: 0, unit: 'reps' } : r.exercises[idx];
             fillExerciseModal(ex, (idx === null) ? 'Nuovo Esercizio' : 'Modifica Esercizio');
         }
 
@@ -1503,7 +1560,7 @@
             }
             // Esercizio aggiunto solo a questa sessione: non esiste nella scheda.
             routineExCtx = { rid: null, idx: null, sessionIdx: exIdx };
-            fillExerciseModal({ name: sessionEx.name, sets: sessionEx.sets.length, repMin: 1, repMax: 1, restSec: sessionEx.targetRestSec, startWeight: 0 }, 'Modifica Esercizio');
+            fillExerciseModal({ name: sessionEx.name, sets: sessionEx.sets.length, repMin: 1, repMax: 1, startWeight: 0, unit: sessionUnit(sessionEx) }, 'Modifica Esercizio');
         }
 
         function fillExerciseModal(ex, title) {
@@ -1512,16 +1569,10 @@
             document.getElementById('re-sets').value = ex.sets;
             document.getElementById('re-repmin').value = ex.repMin;
             document.getElementById('re-repmax').value = ex.repMax;
-            document.getElementById('re-rest').value = ex.restSec;
+            document.getElementById('re-unit').value = ex.unit || 'reps';
             document.getElementById('re-weight').value = ex.startWeight;
             document.getElementById('re-lift').innerHTML = `<option value="">Nessuno</option>` + LIFTS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
             document.getElementById('re-lift').value = ex.lift || '';
-            const prog = ex.id ? getProgression(ex.id) : [];
-            document.getElementById('re-progression').innerHTML = [0, 1, 2, 3, 4, 5].map(i => `
-                <div>
-                    <label for="re-prog-${i}" class="text-[9px] font-bold text-slate-500 dark:text-slate-400 block mb-0.5 uppercase">Sett ${i + 1}</label>
-                    <input type="text" id="re-prog-${i}" value="${esc(prog[i] || '')}" class="w-full bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none px-1.5 py-1.5 text-slate-900 dark:text-white font-bold text-[11px] focus:outline-none focus:border-emerald-500">
-                </div>`).join('');
             document.getElementById('modal-routine-ex').classList.remove('hidden');
         }
 
@@ -1567,14 +1618,14 @@
             const sets = Math.max(1, parseInt(document.getElementById('re-sets').value) || 1);
             const repMin = Math.max(1, parseInt(document.getElementById('re-repmin').value) || 1);
             const repMax = Math.max(repMin, parseInt(document.getElementById('re-repmax').value) || repMin);
-            const restSec = Math.max(0, parseInt(document.getElementById('re-rest').value) || 0);
+            const unit = document.getElementById('re-unit').value;
             const startWeight = parseFloat(document.getElementById('re-weight').value) || 0;
             const lift = document.getElementById('re-lift').value;
 
             const sessionIdx = routineExCtx.sessionIdx;
             if (activeWorkout && sessionIdx !== undefined) {
                 activeWorkout.exercises[sessionIdx].name = name;
-                activeWorkout.exercises[sessionIdx].targetRestSec = restSec;
+                activeWorkout.exercises[sessionIdx].unit = unit;
             }
             if (!r) {
                 closeModal('modal-routine-ex');
@@ -1587,15 +1638,13 @@
             let exId;
             if (routineExCtx.idx === null) {
                 exId = 'ex-' + Date.now();
-                r.exercises.push({ id: exId, name, sets, repMin, repMax, restSec, startWeight, lift });
+                r.exercises.push({ id: exId, name, sets, repMin, repMax, unit, startWeight, lift });
                 showToast(`Esercizio "${name}" aggiunto`, 'success');
             } else {
                 exId = r.exercises[routineExCtx.idx].id;
-                Object.assign(r.exercises[routineExCtx.idx], { name, sets, repMin, repMax, restSec, startWeight, lift });
+                Object.assign(r.exercises[routineExCtx.idx], { name, sets, repMin, repMax, unit, startWeight, lift });
                 showToast('Esercizio modificato', 'success');
             }
-            if (!appData.progressions) appData.progressions = {};
-            appData.progressions[exId] = [0, 1, 2, 3, 4, 5].map(i => document.getElementById(`re-prog-${i}`).value.trim());
             saveAppData();
             closeModal('modal-routine-ex');
             routineExCtx = null;
@@ -1625,10 +1674,10 @@
                 exercises: routine.exercises.map(ex => ({
                     exId: ex.id,
                     name: ex.name,
-                    targetRestSec: ex.restSec || 90,
+                    unit: ex.unit || 'reps',
                     sets: Array.from({ length: ex.sets }, () => ({
                         weight: plannedWeight(ex),
-                        reps: 1,
+                        reps: null,
                         completed: false
                     }))
                 }))
@@ -1654,7 +1703,7 @@
         function confirmAddNewExercise() {
             const name = document.getElementById('new-ex-name').value.trim();
             const weight = parseFloat(document.getElementById('new-ex-weight').value) || 0;
-            const rest = parseInt(document.getElementById('new-ex-rest').value) || 90;
+            const unit = document.getElementById('new-ex-unit').value;
 
             if (!name) {
                 showToast("Inserisci il nome dell'esercizio", "warning");
@@ -1664,9 +1713,9 @@
             if (activeWorkout) {
                 activeWorkout.exercises.push({
                     name: name,
-                    targetRestSec: rest,
+                    unit: unit,
                     sets: [
-                        { weight: weight, reps: 1, completed: false }
+                        { weight: weight, reps: null, completed: false }
                     ]
                 });
                 closeModal('modal-add-exercise');
@@ -1684,7 +1733,7 @@
 
             ex.sets.push({
                 weight: defaultWeight,
-                reps: 1,
+                reps: null,
                 completed: false
             });
 
@@ -1716,10 +1765,6 @@
                     ${activeWorkout.routineId ? `<button onclick="openRoutineModal('${activeWorkout.routineId}')" aria-label="Modifica titolo allenamento" class="w-9 h-9 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center">${PENCIL_ICON}</button>` : ''}
                 </div>
 
-                <button onclick="openAddExerciseModal()" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-black text-xs rounded-none flex items-center justify-center gap-2 transition active:scale-98">
-                    ＋ AGGIUNGI NUOVO ESERCIZIO ALLA SESSIONE
-                </button>
-
                 <div id="session-list" class="space-y-4 pt-1">
             `;
 
@@ -1730,14 +1775,11 @@
                             ${DRAG_HANDLE}
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-xs font-bold text-slate-900 dark:text-white">${exIdx + 1}. ${esc(ex.name)}</h3>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400">${ex.sets.length} serie attive</p>
                             </div>
                             <button onclick="openSessionExerciseModal(${exIdx})" aria-label="Modifica esercizio" class="w-9 h-9 shrink-0 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center">${PENCIL_ICON}</button>
                         </div>
 
                         <div class="drag-hide space-y-3">
-                        ${progressionHTML(ex.exId)}
-                        ${renderExerciseRestPresetsHTML(exIdx, ex.targetRestSec)}
 
                         <div class="space-y-2">
                             ${ex.sets.map((st, setIdx) => `
@@ -1752,14 +1794,17 @@
                                         </div>
 
                                         <div class="flex items-center gap-2 flex-1">
-                                            <div class="flex-1 flex flex-col">
-                                                <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">KG / ZAV</span>
-                                                <input type="number" step="0.5" value="${st.weight}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
-                                            </div>
-
                                             <div class="w-20 flex flex-col">
                                                 <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">REPS</span>
-                                                <input type="number" value="${st.reps}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'reps', this.value)" onchange="startRestTimer(activeWorkout.exercises[${exIdx}].targetRestSec || 90)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                                <input type="number" value="${st.reps ?? ''}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'reps', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">
+                                            </div>
+
+                                            <div class="flex-1 flex flex-col">
+                                                ${sessionUnit(ex) === 'sec' ? `
+                                                <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">SEC</span>
+                                                <input type="number" value="${st.sec ?? ''}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'sec', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">` : `
+                                                <span class="text-[8px] font-bold uppercase text-slate-500 dark:text-slate-400">KG / ZAV</span>
+                                                <input type="number" step="0.5" value="${st.weight || ''}" oninput="draftWorkoutSet(${exIdx}, ${setIdx}, 'weight', this.value)" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-none text-center font-black text-xs text-slate-900 dark:text-white py-1.5 focus:outline-none focus:border-emerald-500">`}
                                             </div>
                                         </div>
 
@@ -1769,7 +1814,7 @@
                             `).join('')}
                         </div>
 
-                        <div class="flex gap-2"><button onclick="addWorkoutSet(${exIdx})" class="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
+                        <div class="flex flex-row-reverse gap-2"><button onclick="addWorkoutSet(${exIdx})" class="flex-1 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-750 text-emerald-600 dark:text-emerald-400 border border-slate-300 dark:border-slate-700 border-dashed font-bold text-xs rounded-none flex items-center justify-center gap-1.5 transition active:scale-98">
                             ＋ Aggiungi Set
                         </button><button onclick="openConfirmModal('Elimina esercizio', 'Vuoi eliminare questo esercizio dalla sessione?', () => removeWorkoutExercise(${exIdx}))" class="px-3.5 flex items-center justify-center bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition active:scale-98" title="Elimina esercizio"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></div>
                         </div>
@@ -1780,6 +1825,9 @@
             html += `
                 </div>
 
+                <button onclick="openAddExerciseModal()" class="w-full py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 font-black text-xs rounded-none flex items-center justify-center gap-2 transition active:scale-98">
+                    ＋ AGGIUNGI NUOVO ESERCIZIO ALLA SESSIONE
+                </button>
                 `;
             return html;
         }
@@ -1907,10 +1955,11 @@
         function draftWorkoutSet(exIdx, setIdx, field, val) {
             if (!activeWorkout) return;
             const setObj = activeWorkout.exercises[exIdx].sets[setIdx];
-            setObj[field] = parseFloat(val) || 0;
-            setObj.completed = true;
+            if (field === 'weight') setObj.weight = parseFloat(val) || 0;
+            else setObj[field] = val === '' ? null : (parseFloat(val) || 0);
+            setObj.completed = setObj.reps != null || setObj.sec != null;
             const stEl = document.getElementById(`set-status-${exIdx}-${setIdx}`);
-            if (stEl) stEl.textContent = '✓';
+            if (stEl) stEl.textContent = setObj.completed ? '✓' : '';
             saveDraft();
         }
 
@@ -1919,17 +1968,19 @@
             const setObj = activeWorkout.exercises[exIdx].sets[setIdx];
             setObj.completed = !setObj.completed;
 
-            if (setObj.completed) {
-                const restSec = activeWorkout.exercises[exIdx].targetRestSec || 90;
-                startRestTimer(restSec);
-            }
             renderSchedeTab();
+        }
+
+        function openFinishModal() {
+            if (activeWorkout) document.getElementById('modal-finish').classList.remove('hidden');
+            else switchTab('schede');
         }
 
         function finishActiveWorkout() {
             if (!activeWorkout) return;
             let totalVolume = 0;
             activeWorkout.exercises.forEach(ex => {
+                if (sessionUnit(ex) === 'sec') return; // I secondi non sono kg sollevati.
                 ex.sets.forEach(s => {
                     if (s.completed) totalVolume += (s.weight * s.reps);
                 });
@@ -1948,7 +1999,8 @@
                 exercises: activeWorkout.exercises.map(e => ({
                     exId: e.exId,
                     name: e.name,
-                    sets: e.sets.map(s => ({ weight: s.weight, reps: s.reps, completed: s.completed }))
+                    unit: sessionUnit(e),
+                    sets: e.sets.map(s => ({ weight: s.weight, reps: s.reps, sec: sessionUnit(e) === 'sec' ? (s.sec ?? null) : undefined, completed: s.completed }))
                 }))
             });
 
@@ -1974,6 +2026,7 @@
             restTimeTotal = seconds;
             restTimeRemaining = seconds;
             isRestPaused = false;
+            document.getElementById('btn-pause-rest').innerHTML = `<i>⏸</i>`;
 
             updateRestTimerUI();
 
@@ -1993,11 +2046,14 @@
             updateRestPill();
         }
 
-        // Il recupero si vede nell'header, solo in Schede. Il logo cede spazio mentre è attivo.
+        // In Schede, durante la sessione, il timer è sempre a portata: solo ⏱ da fermo, conto alla rovescia quando corre.
         function updateRestPill() {
-            const visible = restTimerInterval !== null && activeTab === 'schede';
-            document.getElementById('header-rest-pill').classList.toggle('hidden', !visible);
-            document.getElementById('header-badge').classList.toggle('hidden', visible);
+            const running = restTimerInterval !== null;
+            document.getElementById('header-rest-pill').classList.toggle('hidden', !((running || activeWorkout) && activeTab === 'schede'));
+            ['header-rest-time', 'rest-timer-display', 'rest-running-controls', 'rest-timer-bar'].forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', !running);
+            });
+            document.getElementById('rest-timer-label').textContent = running ? 'Timer Recupero Attivo' : 'Scegli il recupero';
         }
 
         function toggleRestControls() {
@@ -2255,13 +2311,14 @@
         function renderImpostazioniTab() {
             document.getElementById('setting-sound-toggle').checked = appData.settings.soundEnabled;
             renderStylePicker();
+            renderAccentPicker();
         }
 
         function exportDataJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `FitPro_Mammana_Backup.json`);
+            downloadAnchor.setAttribute("download", `FitPro_Andrea_Backup.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -2278,6 +2335,7 @@
                     saveAppData();
                     applyTheme(appData.settings.theme || 'dark');
                     applyStyle(appData.settings.style);
+                    applyAccent(appData.settings.accent);
                     showToast("Dati importati!", "success");
                     switchTab('home');
                 } catch (err) {}
@@ -2291,6 +2349,7 @@
             saveAppData();
             applyTheme('dark');
             applyStyle(appData.settings.style);
+            applyAccent(appData.settings.accent);
             closeModal('modal-confirm');
             switchTab('home');
             showToast("Programma ripristinato!", "info");
